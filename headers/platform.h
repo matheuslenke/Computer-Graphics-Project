@@ -18,7 +18,7 @@ class Platform {
     int gColor;
 private:
     void DrawPlatform(GLfloat x, GLfloat y);
-    void DrawRectangle(GLint height, GLint width, GLfloat R, GLfloat G, GLfloat B);
+    void DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G, GLfloat B);
 public:
     Platform(GLfloat x, GLfloat y, GLfloat sizeX, GLfloat sizeY){
         gX = x; 
@@ -29,7 +29,7 @@ public:
     void Draw(){ 
         DrawPlatform(gX, gY);
     };
-    
+    bool isColiding(GLfloat x, GLfloat y);
     // void Recria(GLfloat x, GLfloat y);
     // bool Atingido(Tiro *tiro);
 };

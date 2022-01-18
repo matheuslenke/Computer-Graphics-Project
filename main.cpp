@@ -9,39 +9,79 @@
 #include <math.h>
 #include <stdio.h>
 #include <iostream>
+#include <list>
+#include <vector>
+
 #include "headers/character.h"
+#include "headers/enemy.h"
 #include "headers/platform.h"
 #include "headers/map.h"
 #include "headers/camera.h"
+#include "headers/shot.h"
+#include "tinyxml2.h"
 
-Character character = Character(0, 30, 60); // Personagem principal
-Map map = Map(0,0, 1000, 500); // Mapa do nível
-Camera camera = Camera(vec3(0, 250, 0)); // Objeto para controlar camera
+
+using namespace std;
+using namespace tinyxml2;
 
 // Window dimensions
-const GLint Width = 700;
-const GLint Height = 700;
+const GLint Width = 500;
+const GLint Height = 500;
 
 // Viewing dimensions
-const GLint ViewingWidth = 500;
-const GLint ViewingHeight = 500;
+GLint ViewingWidth = 500;
+GLint ViewingHeight = 500;
+
+GLfloat cameraX = 0;
+GLfloat cameraY = 0;
 
 int keyStatus[256];
 int cursorPressStatus = 1;
+
+// FPS
+const float FPS = 60;
+
+// Entidades do jogo
+GLfloat playerHeight = 60;
+Character* player = nullptr; // Personagem principal
+Map* map = nullptr; // Mapa do nível
+vector<Shot*> playerShots;
+
+// Parametros de ação dos inimigos
+GLfloat changeActionActualTime = 0;
+const GLfloat timeToChangeAction = 2; // Tempo em segundos
+
+void moveCamera() {
+    glMatrixMode(GL_PROJECTION); // Select the projection matrix   
+    glLoadIdentity(); 
+    GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
+    // cout << "Ortho: ( " << player->GetgX() << " , " << player->GetgX() + ViewingWidth/2 << " , " << cameraY << " , " << cameraY + ViewingHeight << ")" << endl;
+    // cout << "Player xOff: " << xOff << endl;
+    glOrtho(xOff,     // X coordinate of left edge             
+            xOff + ViewingWidth,     // X coordinate of right edge            
+            cameraY,     // Y coordinate of bottom edge             
+            cameraY + ViewingHeight,     // Y coordinate of top edge             
+            -1.0,     // Z coordinate of the “near” plane            
+            1.0);    // Z coordinate of the “far” plane
+    glMatrixMode(GL_MODELVIEW); // Select the projection matrix    
+    glLoadIdentity();
+}
 
 void renderScene(void)
 {
     // Clear the screen.
     glClear(GL_COLOR_BUFFER_BIT);
 
-    camera.Activate();
+    moveCamera();
+    map->Draw();
+    player->Draw();
 
-    map.Draw();
-    character.Draw();
+    for(Shot* shot : playerShots) {
+        shot->Draw();
+    }
 
     glutSwapBuffers(); // Desenha the new frame of the game.
 }
-
 
 void ResetKeyStatus()
 {
@@ -51,22 +91,13 @@ void ResetKeyStatus()
        keyStatus[i] = 0; 
 }
 
-
 void init (void) 
 {
-   ResetKeyStatus();
+    ResetKeyStatus();   
     // The color the windows will redraw. Its done to erase the previous frame.
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black, no opacity(alpha).
- 
-    glMatrixMode(GL_PROJECTION); // Select the projection matrix    
-    glOrtho(-(ViewingWidth/2),     // X coordinate of left edge             
-            (ViewingWidth/2),     // X coordinate of right edge            
-            -(ViewingHeight/2),     // Y coordinate of bottom edge             
-            (ViewingHeight/2),     // Y coordinate of top edge             
-            -100,     // Z coordinate of the “near” plane            
-            100);    // Z coordinate of the “far” plane
-    glMatrixMode(GL_MODELVIEW); // Select the projection matrix    
-    glLoadIdentity();
+
+    moveCamera(); 
 }
 
  /* Callback de tecla pressionada */
@@ -76,14 +107,14 @@ void keyPress(unsigned char key, int x, int y)
     {
         case 'a':
         case 'A':
-             if (keyStatus[(int)('a')] == 0 && character.getIsDirectionToRight()) 
-             {character.StartMoving(false);}
+             if (keyStatus[(int)('a')] == 0 && player->getIsDirectionToRight()) 
+             {player->StartMoving(false);}
              keyStatus[(int)('a')] = 1; //Using keyStatus trick
              break;
         case 'd':
         case 'D':
-             if (keyStatus[(int)('d')] == 0 && !character.getIsDirectionToRight()) 
-             {character.StartMoving(true);}
+             if (keyStatus[(int)('d')] == 0 && !player->getIsDirectionToRight()) 
+             {player->StartMoving(true);}
              keyStatus[(int)('d')] = 1; //Using keyStatus trick
              break;
         case 'j':
@@ -111,44 +142,58 @@ void keyUp(unsigned char key, int x, int y)
 }
 
 void idle (void) {
-
-    static GLdouble previousTime = glutGet(GLUT_ELAPSED_TIME);
     GLdouble currentTime, timeDifference;
-    //Pega o tempo que passou do inicio da aplicacao
-    currentTime = glutGet(GLUT_ELAPSED_TIME);
-    // Calcula o tempo decorrido desde de a ultima frame.
-    timeDifference = currentTime - previousTime;
-    //Atualiza o tempo do ultimo frame ocorrido
-    previousTime = currentTime;
+    do {
+        static GLdouble previousTime =  glutGet(GLUT_ELAPSED_TIME);
+        //Pega o tempo que passou do inicio da aplicacao
+        currentTime = glutGet(GLUT_ELAPSED_TIME);
+        // Calcula o tempo decorrido desde de a ultima frame.
+        timeDifference = currentTime - previousTime;
+        //Atualiza o tempo do ultimo frame ocorrido
+        previousTime = currentTime;
+    } while (timeDifference < 1.0 / FPS);
 
+    // <--- Movimento do Player --->
     if(keyStatus[(int)('a')])
     {
-        character.MoveInX(false, timeDifference);
-        camera.Left(timeDifference);
+        player->MoveInX(false, timeDifference, map);
     }
     if(keyStatus[(int)('d')])
     {
-        camera.Right(timeDifference);
-        character.MoveInX(true, timeDifference);
+        player->MoveInX(true, timeDifference, map);
     }
     if (cursorPressStatus == 0) {
-        character.MoveInY(timeDifference, true);
+        player->MoveInY(timeDifference, true, map);
     } else {
-        character.MoveInY(timeDifference, false);
+        player->MoveInY(timeDifference, false, map);
     }
 
-    // if(keyStatus[(int)('j')]) {
-    //     camera.Left();
-    // }
-    // if(keyStatus[(int)('k')]) {
-    //     camera.Back();
-    // }
-    // if(keyStatus[(int)('l')]) {
-    //     camera.Right();
-    // }
-    // if(keyStatus[(int)('i')]) {
-    //     camera.Forward();
-    // }
+    // Movimento dos tiros
+    for (vector<Shot*>::iterator index = playerShots.begin(); index != playerShots.end(); index++) {
+        Shot* shot = *index;
+        if (shot) {
+            // cout << "Vai avaliar" << endl;
+            bool isShotValid = shot->Valid(map);
+            // cout << "avaliou" << endl;
+            if (!isShotValid){ 
+                // cout << "Tiro invalido!" << endl;
+                // cout << shot << endl;
+                // playerShots.erase(index);
+                // player->RechargeShot();
+                // delete shot;
+            } else {
+                shot->Move(timeDifference);
+            }
+        }
+    }
+
+    // <--- Movimento dos inimigos --->
+    GLdouble enemyTimeDiff = currentTime - changeActionActualTime;
+    if(enemyTimeDiff >= 1 * 1000) { // Muda a cada 1 segundo
+        map->ChangeEnemiesActions();
+        changeActionActualTime = glutGet(GLUT_ELAPSED_TIME);
+    }
+    map->ExecuteEnemiesActions(timeDifference);
 
    glutPostRedisplay();
 }
@@ -156,8 +201,58 @@ void idle (void) {
 void mouseClick(int button, int state, int x, int y) {
     if(button == 0) {
         cursorPressStatus = state;
-        if(!character.getIsJumping()) {
-            character.StartJumping();
+        if(!player->getIsJumping()) {
+            player->StartJumping();
+        }
+    } else if(button == 2) {
+        Shot* shot= player->Shoot();
+        playerShots.push_back(shot);
+    }
+}
+
+void mouseMove(int x, int y) {
+    y = (Height - y);
+    GLfloat normalizedY = (float)y /(float) Height;
+    GLfloat normalizedX = (float)x /(float) Width;
+
+    GLfloat transformedX = ( ViewingWidth - (player->GetgX() - (ViewingWidth/2))) * normalizedX;
+    // cout << "x: " << transformedX << "," << normalizedY << endl;
+    player->MoveArmsAngle(x * 2, y * 2);
+
+    glutPostRedisplay();
+}
+
+void readXMLFile(string filename) {
+    XMLDocument mapDocument;
+    mapDocument.LoadFile(filename.c_str());
+
+    XMLElement* svg = mapDocument.FirstChildElement("svg");
+    XMLElement* aux;
+
+    for(aux = svg->FirstChildElement("rect"); aux != nullptr; aux = aux->NextSiblingElement()) {
+        if(strcmp(aux->Attribute("fill"),"blue") == 0) {
+            ViewingHeight = aux->DoubleAttribute("height");
+            ViewingWidth = aux->DoubleAttribute("height");
+            map = new Map(aux->DoubleAttribute("x"), aux->DoubleAttribute("y"), aux->DoubleAttribute("width"), aux->DoubleAttribute("height") );
+            cameraY = aux->DoubleAttribute("y"); 
+        }
+        else if(strcmp(aux->Attribute("fill"), "green") == 0) {
+            player = new Character(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(0, 1, 0));
+        } else if (strcmp(aux->Attribute("fill"), "black") == 0) {
+            Platform p = Platform( aux->DoubleAttribute("x"), - aux->FloatAttribute("y") + (map->GetSizeY() + 2 * map->GetgY())  , aux->DoubleAttribute("width"), aux->DoubleAttribute("height"));
+            map->AddPlatform(p);
+        } else if(strcmp(aux->Attribute("fill"), "red") == 0) {
+            Enemy* enemy = new Enemy(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(1, 0, 0));
+            
+            // Gerando e inserindo padrão aleatório de ações
+            int random;
+            for(int i = 0; i < 20; i++) {
+                random = rand() % 3;
+                enemy->InsertAction(random);
+            }
+            map->AddEnemy(enemy);
+
+            // enemies.push_back(enemy);
         }
     }
 }
@@ -165,6 +260,8 @@ void mouseClick(int button, int state, int x, int y) {
 
 int main(int argc, char** argv)
 {
+    readXMLFile("arena_teste.svg");
+
     glutInit(&argc, argv);
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
 
@@ -179,11 +276,9 @@ int main(int argc, char** argv)
     glutKeyboardUpFunc(keyUp);
     glutIdleFunc(idle);
     glutMouseFunc(mouseClick);
+    glutPassiveMotionFunc(mouseMove);
 
-    init ();
-
-    // Criação do mapa do jogo
-    map.CreateMapFromSVG();
+    init();
 
     glutMainLoop();
 

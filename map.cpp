@@ -1,26 +1,31 @@
 #include "headers/map.h"
+#include "headers/enemy.h"
 #include <math.h>
 #include <iostream>
+
+using namespace std;
 
 void Map::DrawMap(GLfloat x, GLfloat y)
 {
     glPushMatrix();
-
     glTranslatef(x, y, 0);
 
+    glPushMatrix();
     DrawOutline(); // Desenha contorno dos limites do mapa
+    glPopMatrix();
 
+    glPopMatrix();
     for (Platform platform : this->platforms) {
         platform.Draw();    
     }
 
-    glPopMatrix();
+    DrawEnemies();
 }
 
 void Map::DrawOutline() {
-    glColor3f (1, 1, 1);
+    glColor3f (0.1, 0.1, 0.7);
 
-    glBegin(GL_LINE_LOOP);
+    glBegin(GL_POLYGON);
         glVertex3f (0, 0, 0.0);
         glVertex3f (this->sizeX, 0, 0.0);
         glVertex3f (this->sizeX , this->sizeY, 0.0);
@@ -29,8 +34,7 @@ void Map::DrawOutline() {
     glEnd();
 }
 
-
-void Map::DrawRectangle(GLint height, GLint width, GLfloat R, GLfloat G, GLfloat B)
+void Map::DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G, GLfloat B)
 {
     glColor3f (R, G, B);
 
@@ -44,7 +48,63 @@ void Map::DrawRectangle(GLint height, GLint width, GLfloat R, GLfloat G, GLfloat
     glEnd();
 }
 
-void Map::CreateMapFromSVG() {
-    Platform p1 = Platform(0, 0, 50, 20);
-    this->platforms.push_back(p1);
+void Map::DrawEnemies() {
+    for (Enemy* enemy : this->enemies) {
+        enemy->DrawEnemy();
+    }
+}
+
+bool Map::ColidesWithAPlatform(GLfloat x, GLfloat y) {
+    bool collides = false;
+    // Colisão com os limites horizontais do mapa
+    if(x <= this->gX || x >= (this->gX + this->sizeX)) {
+        return true;
+    }
+    // Colisão com os limites verticais do mapa
+    if (y <= this->gY || y >= (this->gY + this->sizeY)) {
+        return true;
+    }
+    // Colisão com alguma plataforma
+    for (Platform platform : this->platforms) {
+        collides = platform.isColiding(x, y);
+        if (collides == true) { break; }
+        
+    }
+    return collides;
+}
+
+void Map::ExecuteEnemiesActions(GLdouble timeDifference) {
+    for (Enemy* enemy : this->enemies) {
+        enemy->DoAction(timeDifference, this);
+    }
+}
+
+void Map::ChangeEnemiesActions() {
+    for (Enemy* enemy : this->enemies) {
+        enemy->NextAction();
+    }
+}
+
+void Map::AddPlatform(Platform p) {
+    this->platforms.push_back(p);
+}
+
+void Map::AddEnemy(Enemy* e) {
+    this->enemies.push_back(e);
+}
+
+GLfloat Map::GetgX() {
+    return this->gX;
+}
+
+GLfloat Map::GetgY() {
+    return this->gY;
+}
+
+GLfloat Map::GetSizeX() {
+    return this->sizeX;
+}
+
+GLfloat Map::GetSizeY() {
+    return this->sizeY;
 }

@@ -7,13 +7,26 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #endif
+#include <math.h>
 
 struct vec3 {
-	float x, y, z;
+	GLfloat x, y, z;
 	vec3() :x(0.0), y(0.0), z(0.0) {}
-	vec3(float x_, float y_, float z_) :x(x_), y(y_), z(z_) {}
+	vec3(GLfloat x_, GLfloat y_, GLfloat z_) :x(x_), y(y_), z(z_) {}
 	vec3 operator+(const vec3& v)const { return vec3(x + v.x, y + v.y, z + v.z); }
-	vec3 operator*(float k) { return vec3(x*k, y*k, z*k); }
+	vec3 operator*(GLfloat k) { return vec3(x*k, y*k, z*k); }
 };
+
+struct vec2 {
+	GLfloat x, y;
+	vec2(): x(0.0), y(0.0) {}
+	vec2(GLfloat x_, GLfloat y_) :x(x_), y(y_) {}
+};
+
+//Funcao auxiliar de rotacao
+// void RotatePoint(GLfloat x, GLfloat y, GLfloat height, GLfloat angle, GLfloat &xOut, GLfloat &yOut){
+//     yOut = y + height*sin (angle*M_PI/180);
+//     xOut = x + height*cos (angle*M_PI/180);
+// }
 
 #endif

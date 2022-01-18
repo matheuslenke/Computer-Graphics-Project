@@ -31,8 +31,8 @@ public:
 	void Activate();
     void ChangePosition(vec3 pos);
 
-	void Forward();
-	void Back();
+	void Forward(GLdouble timeDiff);
+	void Back(GLdouble timeDiff);
 	void Left(GLdouble timeDiff);
 	void Right(GLdouble timeDiff);
 };

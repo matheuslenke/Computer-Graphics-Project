@@ -12,6 +12,7 @@
 
 // Dimensions
 using namespace std;
+class Enemy; // Forward declaration para evitar dependencia ciclica
 
 class Map {
     GLfloat gX; 
@@ -19,11 +20,13 @@ class Map {
     GLfloat sizeX;
     GLfloat sizeY;
     list<Platform> platforms;
+    list<Enemy*> enemies;
     int gColor;
-private:
+
     void DrawMap(GLfloat x, GLfloat y);
-    void DrawRectangle(GLint height, GLint width, GLfloat R, GLfloat G, GLfloat B);
+    void DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G, GLfloat B);
     void DrawPlatforms();
+    void DrawEnemies();
     void DrawOutline();
 public:
     Map(GLfloat x, GLfloat y, GLfloat sizeX, GLfloat sizeY){
@@ -36,8 +39,15 @@ public:
         DrawMap(gX, gY);
     };
     void CreateMapFromSVG();
-    
-    // void Recria(GLfloat x, GLfloat y);
+    bool ColidesWithAPlatform(GLfloat x, GLfloat y);
+    void AddPlatform(Platform p);
+    GLfloat GetgX();
+    GLfloat GetgY();
+    GLfloat GetSizeX();
+    GLfloat GetSizeY();
+    void AddEnemy(Enemy* e);
+    void ExecuteEnemiesActions(GLdouble timeDifference);
+    void ChangeEnemiesActions();
     // bool Atingido(Tiro *tiro);
 };
 

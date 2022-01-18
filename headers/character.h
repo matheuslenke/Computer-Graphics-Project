@@ -8,13 +8,24 @@
 #include <GL/glut.h>
 #endif
 #include "utils.h"
+#include "map.h"
+#include "shot.h"
 
 // Dimensions
 #define legMovingSpeed 2.0
-#define characterSpeed 0.1
-#define characterJumpingSpeed 0.2
+#define characterSpeed 0.02
+#define characterJumpingSpeed 0.04
+
+struct hitBox {
+    vec2 upLeft;
+    vec2 upRight;
+    vec2 downLeft;
+    vec2 downRight;
+    hitBox(vec2 upl, vec2 upr, vec2 dl, vec2 dr): upLeft(upl), upRight(upr), downLeft(dl), downRight(dr) {}
+};
 
 class Character {
+protected:
     GLfloat gX; 
     GLfloat gY;
     GLfloat totalHeight;
@@ -32,50 +43,75 @@ class Character {
     GLfloat armTheta;
     GLfloat speed;
     GLfloat jumpingSpeed;
-    GLboolean isFacingRight;
-    GLboolean isLeg1PrimaryMoving;
+    GLfloat jumpingGround;
     GLboolean isJumping;
     GLboolean hasJumpedToMax;
     GLfloat da;
     GLfloat da2;
-    int gColor;
-private:
+    GLfloat groundLimit;
+    vec3 bodyColor;
+    GLboolean isShooting;
+
     void DrawCharacter(GLfloat x, GLfloat y);
-    void DrawRectangle(GLint height, GLint width, GLfloat R, GLfloat G, GLfloat B);
-    void DrawCircle(GLint radius, GLfloat R, GLfloat G, GLfloat B);
-    void DrawLegs(GLfloat x, GLfloat y);
+    void DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G, GLfloat B);
+    void DrawCircle(GLfloat radius, GLfloat R, GLfloat G, GLfloat B);
+    void DrawLegs();
+    void DrawArms();
+    void DrawHitbox();
+    bool CollidesLeftWithAPlatform(GLfloat inc, Map* map);
+    bool CollidesRightWithAPlatform(GLfloat inc, Map* map);
+    bool CollidesDownWithAPlatform(Map* map);
+    bool CollidesUpWithAPlatform(Map* map);
+
 public:
-    Character(GLfloat x, GLfloat y, GLfloat totalHeight){
+
+    GLboolean isFacingRight;
+    Character(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor) {
         gX = x; 
         gY = y;
-        gColor = 0;
         speed = characterSpeed;
         isFacingRight = true;
-        isLeg1PrimaryMoving = true;
         this->totalHeight = totalHeight;
+        leg1Theta1 = 0;
+        leg1Theta2 = 0;
+        leg2Theta1 = 0;
+        leg2Theta2 = 0;
         legHeight = totalHeight * 0.2;
         legWidth = totalHeight * 0.1;
         bodyHeight = totalHeight * 0.4;
-        bodyWidth = totalHeight *0.2 ;
+        bodyWidth = totalHeight *0.2;
         radiusHead = totalHeight * 0.1;
-        armHeight = totalHeight * 0.4;
-        armWidth = 10;
+        armHeight = totalHeight * 0.3;
+        armWidth = totalHeight * 0.1;
+        armTheta = 90;
         da = legMovingSpeed;
         da2 = -legMovingSpeed;
         this->jumpingSpeed = characterJumpingSpeed;
         isJumping = false;
         hasJumpedToMax = false;
+        this->groundLimit = groundLimit;
+        this->jumpingGround = groundLimit;
+        this->bodyColor = bodyColor;
+        isShooting = false;
     };
     void Draw(){ 
         DrawCharacter(gX, gY);
     };
-    void MoveInX(bool isToRight, GLdouble timeDiff);
+    void MoveInX(bool isToRight, GLdouble timeDiff, Map* map);
     void StartMoving(bool isToRight);
     bool getIsDirectionToRight();
-    void MoveInY(GLdouble timeDiff, bool isPressingJumpButton);
+    void MoveInY(GLdouble timeDiff, bool isPressingJumpButton, Map* map);
+    void StartStanding();
     void StartJumping();
     bool getIsJumping();
     vec3 getPosition();
+    GLfloat GetgX();
+    GLfloat GetgY();
+    GLfloat GetCharacterGroundY();
+    GLfloat GetCharacterHighestY();
+    void MoveArmsAngle(GLfloat x, GLfloat y);
+    Shot* Shoot();
+    void RechargeShot();
     // void Recria(GLfloat x, GLfloat y);
     // bool Atingido(Tiro *tiro);
 };

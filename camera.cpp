@@ -25,15 +25,15 @@ void Camera::ChangePosition(vec3 pos) {
     position = pos;
 }
 
-void Camera::Forward()
+void Camera::Forward(GLdouble timeDiff)
 {
-	velocity = up_vec * m_scl;
+	velocity = up_vec * m_scl * timeDiff;
 	position = position + velocity;
 }
 
-void Camera::Back()
+void Camera::Back(GLdouble timeDiff)
 {
-	velocity = up_vec * (-m_scl);
+	velocity = up_vec * (-m_scl) * timeDiff;
 	position = position + velocity;
 }
 
@@ -41,7 +41,7 @@ void Camera::Left(GLdouble timeDiff)
 {
 	velocity = left_vec * m_scl * timeDiff;
 	position = position + velocity;
-    std::cout << "Position: " << position.x << " | " << position.y << " | " << position.z << std::endl;
+    // std::cout << "Position: " << position.x << " | " << position.y << " | " << position.z << std::endl;
 }
 
 void Camera::Right(GLdouble timeDiff)
