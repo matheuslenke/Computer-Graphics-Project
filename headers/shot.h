@@ -19,6 +19,7 @@ class Shot {
     GLdouble gDirectionAng;
     GLdouble gVel;
     GLdouble shotRadius;
+    GLboolean hittedEnemy;
     vec3 color;
 private:
     void DrawCirc(GLdouble radius, GLfloat R, GLfloat G, GLfloat B);
@@ -33,16 +34,20 @@ public:
         gVel = speed;
         this->shotRadius = shotRadius;
         this->color = color;
+        hittedEnemy = false;
     };
     void Draw(){ 
         DrawShot(gX, gY);
     };
     void Move(GLdouble timeDifference);
     bool Valid(Map* map);
-    void GetPos(GLfloat &xOut, GLfloat &yOut){
-        xOut = gX;
-        yOut = gY;
+    vec2 GetPos(){
+        return vec2(this->gX, this->gY);
     };
+    GLfloat GetRadius();
+    void SetHittedEnemy() {
+        hittedEnemy = true;
+    }
 };
 
 #endif	/* TIRO_H */

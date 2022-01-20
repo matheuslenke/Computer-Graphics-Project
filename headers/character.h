@@ -119,12 +119,14 @@ public:
     GLfloat GetgY();
     GLfloat GetCharacterGroundY();
     GLfloat GetCharacterHighestY();
+    GLfloat GetBodyWidth();
+    GLfloat GetTotalHeight();
     void MoveArmsAngle(GLfloat x, GLfloat y);
     void Shoot();
     vector<Shot*>& GetShots();
     void RechargeShot();
-    // void Recria(GLfloat x, GLfloat y);
-    // bool Atingido(Tiro *tiro);
+    bool CollidesWithPoint(GLfloat x, GLfloat y);
+    bool CollidesWithEndOfMap(Map* map);
 };
 
 #endif	/* CHARACTER_H */

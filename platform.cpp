@@ -9,7 +9,6 @@ void Platform::DrawPlatform(GLfloat x, GLfloat y)
     glPushMatrix();
 
     glTranslatef(x, y, 0);
-    // cout << "Desenhando plataforma: (" << x << " , " << y << ")" << endl;
 
     // Desenha a plataforma
     DrawRectangle(this->sizeY, this->sizeX, 0, 0, 0);
@@ -32,8 +31,8 @@ void Platform::DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G
 }
 
 bool Platform::isColiding(GLfloat x, GLfloat y) {
-    if (x > this->gX && x < this->gX + this->sizeX) {
-        if (y < this->gY && y > this->gY - this->sizeY) {
+    if (x >= this->gX && x <= this->gX + this->sizeX) {
+        if (y <= this->gY && y >= this->gY - this->sizeY) {
             return true;
         }
     }

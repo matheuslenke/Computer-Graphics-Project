@@ -29,16 +29,20 @@ protected:
     */
     vector<int> actingPattern;
     int actualAction;
+    GLboolean CollidesUpWithCharacter(Character* character, GLfloat inc);
+    GLboolean CollidesDownWithCharacter(Character* character, GLfloat inc);
+    GLboolean CollidesRightWithCharacter(Character* character, GLfloat inc);
+    GLboolean CollidesLeftWithCharacter(Character* character, GLfloat inc);
 public:
     Enemy(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor, vec3 shootColor, GLint ammo) : Character(x, y, totalHeight, groundLimit, bodyColor, shootColor, ammo) {
     }
     void DrawEnemy() {
         Character::Draw();
     }
-    void MoveInX(GLdouble timeDiff, Map* map);
+    void MoveInX(GLdouble timeDiff, Map* map, Character* player);
     void InsertAction(int action);
     void NextAction();
-    void DoAction(GLfloat timeDiff, Map* map);
+    void DoAction(GLfloat timeDiff, Map* map, Character* player);
     void AdjustArms(vec2 playerPosition);
 };
 

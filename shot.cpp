@@ -25,7 +25,6 @@ void Shot::DrawShot(GLdouble x, GLdouble y)
 {
     glPushMatrix();
     glTranslatef(x, y, 0);
-    // std::cout << "DesenhaTiro: " << x << "," << y << std::endl;
     DrawCirc(this->shotRadius, this->color.x, this->color.y, this->color.z);
     glPopMatrix();
 }
@@ -40,6 +39,7 @@ void Shot::Move(GLdouble timeDifference)
 
 bool Shot::Valid(Map* map)
 {
+    if (this->hittedEnemy == true) { return false; }
     GLboolean isValid = true;
     int numSegments = 20;
     for(int j = 0; j <= numSegments ; j+=1) {
@@ -52,4 +52,8 @@ bool Shot::Valid(Map* map)
         }
     }
     return isValid;
+}
+
+GLfloat Shot::GetRadius() {
+    return this->shotRadius;
 }

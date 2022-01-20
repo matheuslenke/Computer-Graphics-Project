@@ -49,6 +49,3 @@ void Camera::Right(GLdouble timeDiff)
 	velocity = left_vec * (-m_scl) * timeDiff;
 	position = position + velocity;
 }
-
-
-

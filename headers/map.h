@@ -15,6 +15,7 @@
 using namespace std;
 // Forward declaration para evitar dependencia ciclica
 class Enemy; 
+class Character;
 class Shot;
 struct vec2;
 
@@ -50,13 +51,15 @@ public:
     GLfloat GetSizeX();
     GLfloat GetSizeY();
     void AddEnemy(Enemy* e);
-    void ExecuteEnemiesActions(GLdouble timeDifference, vec2 playerPosition);
+    void ExecuteEnemiesActions(GLdouble timeDifference, Character* player);
     void ChangeEnemiesActions();
     void RechargeEnemies();
     void DrawShots();
     void MoveShots(GLdouble timeDifference);
     void CheckIfEnemyIsHit(vector<Shot*> playerShots);
-    // bool Atingido(Tiro *tiro);
+    GLboolean CheckIfPlayerIsHit(Character* player);
+    bool ColidesWithRightEnd(GLfloat x);
+    bool CollidesWithEnemy(GLfloat x, GLfloat y);
 };
 
 #endif	/* MAP_H */

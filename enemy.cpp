@@ -2,7 +2,7 @@
 
 using namespace std;
 
-void Enemy::MoveInX(GLdouble timeDiff, Map* map) {
+void Enemy::MoveInX(GLdouble timeDiff, Map* map, Character* player) {
   GLfloat inc = this->speed * timeDiff;
   if(!CollidesDownWithAPlatform(map)) {
     this->isFacingRight = !this->isFacingRight;
@@ -12,7 +12,15 @@ void Enemy::MoveInX(GLdouble timeDiff, Map* map) {
       this->gX -= inc;
     }
   }
+  if(CollidesUpWithCharacter(player, inc) || CollidesDownWithCharacter(player, inc)) {
+      Character::StartStanding();
+      return;
+  }
   if (isFacingRight) {
+        if(CollidesRightWithCharacter(player, inc) == true ){
+            Character::StartStanding();
+            return;
+        }
         if (
             CollidesRightWithAPlatform(inc, map) == true ) {
             this->isFacingRight = false;
@@ -34,7 +42,10 @@ void Enemy::MoveInX(GLdouble timeDiff, Map* map) {
         leg2Theta1 += da2;
 
     } else {
-        GLfloat inc = this->speed * timeDiff;
+        if(CollidesLeftWithCharacter(player, inc) == true ){
+            Character::StartStanding();
+            return;
+        }
         if (CollidesLeftWithAPlatform(inc, map) == true) {
             this->isFacingRight = true;
             Character::StartMoving(true);
@@ -57,14 +68,13 @@ void Enemy::MoveInX(GLdouble timeDiff, Map* map) {
     }
 }
 
-void Enemy::DoAction(GLfloat timeDiff, Map* map) {
+void Enemy::DoAction(GLfloat timeDiff, Map* map, Character* player) {
 
     switch(actingPattern[actualAction]) {
         case 0: // Andar
-            this->MoveInX(timeDiff, map);
+            this->MoveInX(timeDiff, map, player);
             break;
         case 1: // Atirar
-            // cout << "Atirando" << endl;
             this->Shoot();
             break;
         case 2: // Ficar parado
@@ -73,8 +83,46 @@ void Enemy::DoAction(GLfloat timeDiff, Map* map) {
     }
 }
 
+GLboolean Enemy::CollidesUpWithCharacter(Character* character, GLfloat inc) {
+    if (character->CollidesWithPoint(this->gX - this->bodyWidth/2, this->gY + 0.6*totalHeight) == true) {
+        return true;
+    }
+    if (character->CollidesWithPoint(this->gX + this->bodyWidth/2, this->gY + 0.6*totalHeight) == true) {
+        return true;
+    }
+    return false;
+}
+
+GLboolean Enemy::CollidesDownWithCharacter(Character* character, GLfloat inc) {
+    if (character->CollidesWithPoint(this->gX - this->bodyWidth/2, this->gY - 0.6*totalHeight) == true) {
+        return true;
+    }
+    if (character->CollidesWithPoint(this->gX + this->bodyWidth/2, this->gY - 0.6*totalHeight) == true) {
+        return true;
+    }
+    return false;
+}
+
+GLboolean Enemy::CollidesRightWithCharacter(Character* character, GLfloat inc) {
+    for(double i = -0.49; i<= 0.41; i+=0.1) { 
+        if (character->CollidesWithPoint(this->gX + this->bodyWidth/2 + inc, this->gY +i *totalHeight) == true) {
+            return true;
+        }
+    }
+    return false;
+}
+
+GLboolean Enemy::CollidesLeftWithCharacter(Character* character, GLfloat inc) {
+    for(double i = -0.49; i<= 0.41; i+=0.1) { 
+        if (character->CollidesWithPoint(this->gX - this->bodyWidth/2 - inc, this->gY +i *totalHeight) == true) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 void Enemy::AdjustArms(vec2 playerPosition) {
-    // cout << "Player position: " << playerPosition.x << "," << playerPosition.y << endl;
     this->MoveArmsAngle(playerPosition.x, playerPosition.y);
 }
 

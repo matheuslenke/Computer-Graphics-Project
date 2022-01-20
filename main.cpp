@@ -45,6 +45,9 @@ const float FPS = 60;
 GLfloat playerHeight = 60;
 Character* player = nullptr; // Personagem principal
 Map* map = nullptr; // Mapa do nível
+GLboolean gameOver = false;
+GLboolean gameWin = false;
+string filename = "arena_teste.svg";
 
 // Parametros de ação dos inimigos
 GLfloat changeActionActualTime = 0;
@@ -52,12 +55,13 @@ const GLfloat timeToChangeAction = 2; // Tempo em segundos
 const GLint playerAmmo = 1;
 const GLint enemyAmmo = 1;
 
+// Impressao na tela
+void * font = GLUT_BITMAP_9_BY_15;
+
 void moveCamera() {
     glMatrixMode(GL_PROJECTION); // Select the projection matrix   
     glLoadIdentity(); 
     GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
-    // cout << "Ortho: ( " << player->GetgX() << " , " << player->GetgX() + ViewingWidth/2 << " , " << cameraY << " , " << cameraY + ViewingHeight << ")" << endl;
-    // cout << "Player xOff: " << xOff << endl;
     glOrtho(xOff,     // X coordinate of left edge             
             xOff + ViewingWidth,     // X coordinate of right edge            
             cameraY,     // Y coordinate of bottom edge             
@@ -68,20 +72,42 @@ void moveCamera() {
     glLoadIdentity();
 }
 
+void PrintOnScreen(GLfloat x, GLfloat y, string text)
+{
+    glColor3f(1.0, 1.0, 1.0);
+    glRasterPos2f(x, y);
+
+    int i, len;
+    len = text.length();
+    for(i = 0; i < len ; i++) {
+        glutBitmapCharacter(font, text[i]);
+    }
+}
+
 void renderScene(void)
 {
     // Clear the screen.
     glClear(GL_COLOR_BUFFER_BIT);
+    if(gameOver == true) {
+        string text {"Game Over! press r to restart"};
+        GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
+        PrintOnScreen(xOff + ViewingWidth/4, cameraY + ViewingHeight/2, text);
+    } else if (gameWin == true) {
+        string text {"You win! press r to restart"};
 
-    moveCamera();
-    map->Draw();
-    player->Draw();
+        GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
+        PrintOnScreen(xOff + ViewingWidth/3, cameraY + ViewingHeight/2, "Congratulations!");
+        PrintOnScreen(xOff + ViewingWidth/4, cameraY + ViewingHeight/3, text);
+    } else {
+        moveCamera();
+        map->Draw();
+        player->Draw();
 
-    for (Shot* shot : player->GetShots() ) {
-        shot->Draw();
+        for (Shot* shot : player->GetShots() ) {
+            shot->Draw();
+        }
+        map->DrawShots(); // Tiros dos inimigos
     }
-    map->DrawShots(); // Tiros dos inimigos
-
     glutSwapBuffers(); // Desenha the new frame of the game.
 }
 
@@ -102,9 +128,58 @@ void init (void)
     moveCamera(); 
 }
 
+void readXMLFile(string filename) {
+    XMLDocument mapDocument;
+    mapDocument.LoadFile(filename.c_str());
+
+    XMLElement* svg = mapDocument.FirstChildElement("svg");
+    XMLElement* aux;
+
+    for(aux = svg->FirstChildElement("rect"); aux != nullptr; aux = aux->NextSiblingElement()) {
+        if(strcmp(aux->Attribute("fill"),"blue") == 0) {
+            ViewingHeight = aux->DoubleAttribute("height");
+            ViewingWidth = aux->DoubleAttribute("height");
+            map = new Map(aux->DoubleAttribute("x"), aux->DoubleAttribute("y"), aux->DoubleAttribute("width"), aux->DoubleAttribute("height") );
+            cameraY = aux->DoubleAttribute("y"); 
+        }
+        else if(strcmp(aux->Attribute("fill"), "green") == 0) {
+            player = new Character(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(0, 1, 0), vec3(1, 1, 1), playerAmmo);
+        } else if (strcmp(aux->Attribute("fill"), "black") == 0) {
+            Platform p = Platform( aux->DoubleAttribute("x"), - aux->FloatAttribute("y") + (map->GetSizeY() + 2 * map->GetgY())  , aux->DoubleAttribute("width"), aux->DoubleAttribute("height"));
+            map->AddPlatform(p);
+        } else if(strcmp(aux->Attribute("fill"), "red") == 0) {
+            Enemy* enemy = new Enemy(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(1, 0, 0), vec3(0.7, 0.3, 0.3), enemyAmmo);
+            // Gerando e inserindo padrão aleatório de ações
+            int random;
+            for(int i = 0; i < 20; i++) {
+                random = rand() % 2;
+                enemy->InsertAction(random);
+            }
+            map->AddEnemy(enemy);
+        }
+    }
+}
+
+void restartGame() {
+    gameOver = false;
+    gameWin = false;
+    ResetKeyStatus();
+    delete player;
+    player = nullptr;
+    delete map;
+    map = nullptr;
+    readXMLFile(filename);
+}
+
  /* Callback de tecla pressionada */
 void keyPress(unsigned char key, int x, int y)
 {
+    if (gameOver || gameWin) { 
+        if(key == 'R' || key == 'r') {
+            restartGame();
+        }
+        return;
+     }
     switch (key)
     {
         case 'a':
@@ -139,6 +214,7 @@ void keyPress(unsigned char key, int x, int y)
 
 void keyUp(unsigned char key, int x, int y)
 {
+    if(gameOver || gameWin ) { return; }
     keyStatus[(int)(key)] = 0;
     glutPostRedisplay();
 }
@@ -155,6 +231,8 @@ void idle (void) {
         previousTime = currentTime;
     } while (timeDifference < 1.0 / FPS);
 
+    if (gameOver || gameWin) { return; }
+
     // <--- Movimento do Player --->
     if(keyStatus[(int)('a')])
     {
@@ -170,17 +248,33 @@ void idle (void) {
         player->MoveInY(timeDifference, false, map);
     }
 
+    // <--- Checando se o usuário ganhou o jogo --->
+    if(player->CollidesWithEndOfMap(map)) {
+        gameWin = true;
+    }
+
+    // Checagem de colisão
     vector<Shot*>& playerShots = player->GetShots();
+    // Colisão dos inimigos com tiros do player
+    map->CheckIfEnemyIsHit(playerShots);
+
+    // Colisão do player com tiros dos inimigos
+    if (map->CheckIfPlayerIsHit(player)) {
+        gameOver = true;
+        ResetKeyStatus();
+        glutPostRedisplay();
+        return;
+    }
+
+    // Lógica de movimentação dos tiros do player
     for (vector<Shot*>::const_iterator index = playerShots.begin(); index != playerShots.end(); ) {
         Shot* shot = *index;
         if (shot) {
             bool isShotValid = shot->Valid(map);
             if (!isShotValid){ 
-                cout << "Tiro inválido!" << endl;
                 playerShots.erase(index);
                 player->RechargeShot();
             } else {
-                cout << "Tiro válido!" << endl;
                 index++;
                 shot->Move(timeDifference);
             }
@@ -196,12 +290,13 @@ void idle (void) {
         map->ChangeEnemiesActions();
         changeActionActualTime = glutGet(GLUT_ELAPSED_TIME);
     }
-    map->ExecuteEnemiesActions(timeDifference, vec2(player->GetgX(), player->GetgY()));
+    map->ExecuteEnemiesActions(timeDifference, player);
 
    glutPostRedisplay();
 }
 
 void mouseClick(int button, int state, int x, int y) {
+    if(gameOver || gameWin) { return; }
     if(button == 0) {
         cursorPressStatus = state;
         if(!player->getIsJumping()) {
@@ -213,6 +308,7 @@ void mouseClick(int button, int state, int x, int y) {
 }
 
 void mouseMove(int x, int y) {
+    if(gameOver || gameWin) { return; }
     y = (Height - y);
     GLfloat normalizedY = (float)y /(float) Height;
     GLfloat normalizedX = (float)x /(float) Width;
@@ -225,46 +321,9 @@ void mouseMove(int x, int y) {
     glutPostRedisplay();
 }
 
-void readXMLFile(string filename) {
-    XMLDocument mapDocument;
-    mapDocument.LoadFile(filename.c_str());
-
-    XMLElement* svg = mapDocument.FirstChildElement("svg");
-    XMLElement* aux;
-    bool test = false;
-
-    for(aux = svg->FirstChildElement("rect"); aux != nullptr; aux = aux->NextSiblingElement()) {
-        if(strcmp(aux->Attribute("fill"),"blue") == 0) {
-            ViewingHeight = aux->DoubleAttribute("height");
-            ViewingWidth = aux->DoubleAttribute("height");
-            map = new Map(aux->DoubleAttribute("x"), aux->DoubleAttribute("y"), aux->DoubleAttribute("width"), aux->DoubleAttribute("height") );
-            cameraY = aux->DoubleAttribute("y"); 
-        }
-        else if(strcmp(aux->Attribute("fill"), "green") == 0) {
-            player = new Character(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(0, 1, 0), vec3(1, 1, 1), playerAmmo);
-        } else if (strcmp(aux->Attribute("fill"), "black") == 0) {
-            Platform p = Platform( aux->DoubleAttribute("x"), - aux->FloatAttribute("y") + (map->GetSizeY() + 2 * map->GetgY())  , aux->DoubleAttribute("width"), aux->DoubleAttribute("height"));
-            map->AddPlatform(p);
-        } else if(strcmp(aux->Attribute("fill"), "red") == 0) {
-            if (test) { return;}
-            Enemy* enemy = new Enemy(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(1, 0, 0), vec3(0.7, 0.3, 0.3), enemyAmmo);
-        
-            // Gerando e inserindo padrão aleatório de ações
-            int random;
-            for(int i = 0; i < 20; i++) {
-                random = rand() % 2;
-                enemy->InsertAction(random);
-            }
-            map->AddEnemy(enemy);
-            test = true;
-        }
-    }
-}
-
-
 int main(int argc, char** argv)
 {
-    readXMLFile("arena_teste.svg");
+    readXMLFile(filename);
 
     glutInit(&argc, argv);
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);

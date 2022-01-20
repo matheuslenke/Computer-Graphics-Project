@@ -2,29 +2,24 @@
 #include <math.h>
 #include <iostream>
 
-/* <-- Drawing Section --> */
+/* <-- Seção de Desenhos --> */
 void Character::DrawCharacter(GLfloat x, GLfloat y)
 {
     glPushMatrix();
 
     glTranslatef(x, y, 0);
     glTranslatef(0, -totalHeight * 0.1, 0);
-
     // Desenha o corpo do personagem
     DrawRectangle(bodyHeight, bodyWidth, bodyColor.x, bodyColor.y, bodyColor.z);
-
     // Desenha a cabeça do personagem
     glPushMatrix();
     glTranslatef(0, bodyHeight + radiusHead, 0);
     DrawCircle(radiusHead, bodyColor.x, bodyColor.y, bodyColor.z);
     glPopMatrix();
-
     // Desenha a perna do personagem
     DrawLegs();
-
     // Desenha os braços do personagem
     DrawArms();
-
     // DrawHitbox();
 
     glPopMatrix();
@@ -128,7 +123,7 @@ void Character::DrawHitbox() {
     glPopMatrix();
 }
 
-/* <-- Animation Section --> */
+/* <-- Seção de Animações --> */
 void Character::StartMoving(bool isToRight) {
     if (isJumping) {
         if (isToRight) {
@@ -183,7 +178,7 @@ void Character::StartStanding() {
     this->leg2Theta2 = 0;
 }
 
-/* <-- Moving and Logic Section --> */
+/* <-- Seção de Movimentos e Lógica --> */
 void Character::MoveInX(bool isToRight, GLdouble timeDiff, Map* map) {
     if (isToRight) {
         GLfloat inc = this->speed * timeDiff;
@@ -308,7 +303,6 @@ void Character::Shoot() {
         } else {
             RotatePointUtil(tX, tY, this->armHeight , tTheta, tX, tY);
         }
-        // std::cout << "Ponto criado: (" <<  tX << "," << tY << ")" << std::endl;
         this->ammo -= 1;
         Shot* shot = new Shot(tX, tY, tTheta, armWidth, this->speed * 2, this->shootColor);
         this->shots.push_back(shot);
@@ -317,7 +311,6 @@ void Character::Shoot() {
 
 void Character::RechargeShot() {
     this->ammo = this->totalAmmo;
-    cout << "Recharging! " << this->ammo << endl;
 }
 
 bool Character::CollidesDownWithAPlatform(Map* map) {
@@ -325,20 +318,32 @@ bool Character::CollidesDownWithAPlatform(Map* map) {
         this->gY = groundLimit + 0.6 * totalHeight;
         return true;
     }
-    if (map->ColidesWithAPlatform(this->gX - this->bodyWidth/2, this->gY - 0.60*totalHeight) == true) {
+    if (map->ColidesWithAPlatform(this->gX - this->bodyWidth/2, this->gY - 0.6*totalHeight) == true
+        ||
+        map->CollidesWithEnemy(this->gX - this->bodyWidth/2, this->gY - 0.6*totalHeight) == true
+        ) {
         return true;
     }
-    if (map->ColidesWithAPlatform(this->gX + this->bodyWidth/2, this->gY - 0.60*totalHeight) == true) {
+    if (map->ColidesWithAPlatform(this->gX + this->bodyWidth/2, this->gY - 0.6*totalHeight) == true
+        ||
+        map->CollidesWithEnemy(this->gX + this->bodyWidth/2, this->gY - 0.6*totalHeight) == true
+    ) {
         return true;
     }
     return false;
 }
 
 bool Character::CollidesUpWithAPlatform(Map* map) {
-    if (map->ColidesWithAPlatform(this->gX - this->bodyWidth/2, this->gY + 0.5*totalHeight) == true) {
+    if (map->ColidesWithAPlatform(this->gX - this->bodyWidth/2, this->gY + 0.5*totalHeight) == true
+        ||
+        map->CollidesWithEnemy(this->gX - this->bodyWidth/2, this->gY + 0.5*totalHeight) == true   
+    ) {
         return true;
     }
-    if (map->ColidesWithAPlatform(this->gX + this->bodyWidth/2, this->gY + 0.5*totalHeight) == true) {
+    if (map->ColidesWithAPlatform(this->gX + this->bodyWidth/2, this->gY + 0.5*totalHeight) == true
+        ||
+        map->CollidesWithEnemy(this->gX + this->bodyWidth/2, this->gY + 0.5*totalHeight) == true  
+    ) {
         return true;
     }
 
@@ -346,8 +351,11 @@ bool Character::CollidesUpWithAPlatform(Map* map) {
 }
 
 bool Character::CollidesLeftWithAPlatform(GLfloat inc, Map* map) {
-    for(double i = -0.49; i<= 0.49; i+=0.1) {
-        if (map->ColidesWithAPlatform(this->gX - this->bodyWidth/2 - inc, this->gY + i*totalHeight) == true) {
+    for(double i = -0.49; i<= 0.41; i+=0.1) {
+        if (map->ColidesWithAPlatform(this->gX - this->bodyWidth/2 - inc, this->gY + i*totalHeight) == true
+            ||
+            map->CollidesWithEnemy(this->gX - this->bodyWidth/2 - inc, this->gY + i*totalHeight) == true
+        ) {
             return true;
         }
     }
@@ -355,15 +363,34 @@ bool Character::CollidesLeftWithAPlatform(GLfloat inc, Map* map) {
 }
 
 bool Character::CollidesRightWithAPlatform(GLfloat inc, Map* map) {
-    for(double i = -0.49; i<= 0.49; i+=0.1) {
-        if (map->ColidesWithAPlatform(this->gX + this->bodyWidth/2 + inc, this->gY + i*totalHeight) == true) {
+    for(double i = -0.49; i<= 0.41; i+=0.1) {
+        if (map->ColidesWithAPlatform(this->gX + this->bodyWidth/2 + inc, this->gY + i*totalHeight) == true
+            ||
+            map->CollidesWithEnemy(this->gX + this->bodyWidth/2 + inc, this->gY + i*totalHeight) == true
+        ) {
             return true;
         }
     }
     return false;
 }
 
-/* <-- Getters and Setters Section --> */
+bool Character::CollidesWithPoint(GLfloat x, GLfloat y) {
+    if(x > this->gX - bodyWidth/2 && x < this->gX + bodyWidth/2) {
+        if(y > this->gY - 0.5 * totalHeight && y < this->gY + 0.5 * totalHeight) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Character::CollidesWithEndOfMap(Map* map) {
+    if(map->ColidesWithRightEnd(this->gX + bodyWidth/2 + armWidth) == true) {
+        return true;
+    }
+    return false;
+}
+
+/* <-- Getters e Setters --> */
 bool Character::getIsDirectionToRight() {
     return this->isFacingRight;
 }
@@ -385,27 +412,21 @@ GLfloat Character::GetgY() {
 }
 
 GLfloat Character::GetCharacterGroundY() {
-    return this->gY - 0.5* this->totalHeight;
+    return this->gY - 0.51* this->totalHeight;
 }
 
 GLfloat Character::GetCharacterHighestY() {
-    return this->gY + 0.5* this->totalHeight;
+    return this->gY + 0.51* this->totalHeight;
 }
 
 vector<Shot*> &Character::GetShots() {
     return this->shots;
 }
 
+GLfloat Character::GetBodyWidth() {
+    return this->bodyWidth;
+}
 
-
-
-// bool Character::Atingido(Tiro *tiro)
-// {
-//     // GLfloat tX, tY;
-//     // tiro->GetPos(tX, tY);
-//     // if(tX >= gX - radiusAlvo && tX <= gX + radiusAlvo
-//     //     && tY <= gY + radiusAlvo && tY >= gY - radiusAlvo) {
-//     //         return true;
-//     // }
-//     // return false;
-// }
+GLfloat Character::GetTotalHeight() {
+    return this->totalHeight;
+}
