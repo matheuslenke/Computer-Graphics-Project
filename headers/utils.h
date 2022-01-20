@@ -23,10 +23,5 @@ struct vec2 {
 	vec2(GLfloat x_, GLfloat y_) :x(x_), y(y_) {}
 };
 
-//Funcao auxiliar de rotacao
-// void RotatePoint(GLfloat x, GLfloat y, GLfloat height, GLfloat angle, GLfloat &xOut, GLfloat &yOut){
-//     yOut = y + height*sin (angle*M_PI/180);
-//     xOut = x + height*cos (angle*M_PI/180);
-// }
 
 #endif

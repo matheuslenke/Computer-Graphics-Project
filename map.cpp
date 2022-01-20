@@ -54,6 +54,15 @@ void Map::DrawEnemies() {
     }
 }
 
+void Map::DrawShots() {
+    for (Enemy* enemy : this->enemies) {
+        vector<Shot*> shots = enemy->GetShots();
+        for (Shot* shot : shots) {
+            shot->Draw();
+        }
+    }
+}
+
 bool Map::ColidesWithAPlatform(GLfloat x, GLfloat y) {
     bool collides = false;
     // Colisão com os limites horizontais do mapa
@@ -73,8 +82,11 @@ bool Map::ColidesWithAPlatform(GLfloat x, GLfloat y) {
     return collides;
 }
 
-void Map::ExecuteEnemiesActions(GLdouble timeDifference) {
+void Map::ExecuteEnemiesActions(GLdouble timeDifference, vec2 playerPosition) {
+    Shot* aux;
+    playerPosition = vec2(playerPosition.x, playerPosition.y);
     for (Enemy* enemy : this->enemies) {
+        enemy->AdjustArms(playerPosition);
         enemy->DoAction(timeDifference, this);
     }
 }
@@ -82,6 +94,40 @@ void Map::ExecuteEnemiesActions(GLdouble timeDifference) {
 void Map::ChangeEnemiesActions() {
     for (Enemy* enemy : this->enemies) {
         enemy->NextAction();
+    }
+}
+
+void Map::RechargeEnemies() {
+    for (Enemy* enemy : this->enemies) {
+        enemy->RechargeShot();
+    }
+}
+
+void Map::MoveShots(GLdouble timeDifference) {
+    for(Enemy* enemy: this->enemies) {
+        vector<Shot*>& enemyShots = enemy->GetShots();
+        for (vector<Shot*>::iterator index = enemyShots.begin(); index != enemyShots.end(); ) {
+            Shot* shot = *index;
+            if (shot) {
+                bool isShotValid = shot->Valid(this);
+                if (!isShotValid){ 
+                    enemyShots.erase(index);
+                    enemy->RechargeShot();
+                } else {
+                    index++;
+                    shot->Move(timeDifference);
+                }
+            }
+        }
+
+    }
+}
+
+void Map::CheckIfEnemyIsHit(vector<Shot*> playerShots) {
+    for(Shot* shot : playerShots) {
+        for(vector<Enemy*>::iterator index = enemies.begin(); index != enemies.end();) {
+
+        }
     }
 }
 

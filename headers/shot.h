@@ -9,20 +9,22 @@
 #endif
 
 #include "map.h"
+#include "utils.h"
 
 class Shot {
     GLdouble gXInit; 
     GLdouble gYInit; 
     GLdouble gX; 
     GLdouble gY; 
-    GLfloat gDirectionAng;
-    GLfloat gVel;
-    GLfloat shotRadius;
+    GLdouble gDirectionAng;
+    GLdouble gVel;
+    GLdouble shotRadius;
+    vec3 color;
 private:
     void DrawCirc(GLdouble radius, GLfloat R, GLfloat G, GLfloat B);
     void DrawShot(GLdouble x, GLdouble y);
 public:
-    Shot(GLdouble x, GLdouble y, GLdouble directionAng, GLdouble shotRadius, GLdouble speed){
+    Shot(GLdouble x, GLdouble y, GLdouble directionAng, GLdouble shotRadius, GLdouble speed, vec3 color){
         gXInit = x; 
         gYInit = y; 
         gX = x; 
@@ -30,6 +32,7 @@ public:
         gDirectionAng = directionAng; 
         gVel = speed;
         this->shotRadius = shotRadius;
+        this->color = color;
     };
     void Draw(){ 
         DrawShot(gX, gY);

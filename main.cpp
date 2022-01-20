@@ -45,11 +45,12 @@ const float FPS = 60;
 GLfloat playerHeight = 60;
 Character* player = nullptr; // Personagem principal
 Map* map = nullptr; // Mapa do nível
-vector<Shot*> playerShots;
 
 // Parametros de ação dos inimigos
 GLfloat changeActionActualTime = 0;
 const GLfloat timeToChangeAction = 2; // Tempo em segundos
+const GLint playerAmmo = 1;
+const GLint enemyAmmo = 1;
 
 void moveCamera() {
     glMatrixMode(GL_PROJECTION); // Select the projection matrix   
@@ -76,9 +77,10 @@ void renderScene(void)
     map->Draw();
     player->Draw();
 
-    for(Shot* shot : playerShots) {
+    for (Shot* shot : player->GetShots() ) {
         shot->Draw();
     }
+    map->DrawShots(); // Tiros dos inimigos
 
     glutSwapBuffers(); // Desenha the new frame of the game.
 }
@@ -168,24 +170,25 @@ void idle (void) {
         player->MoveInY(timeDifference, false, map);
     }
 
-    // Movimento dos tiros
-    for (vector<Shot*>::iterator index = playerShots.begin(); index != playerShots.end(); index++) {
+    vector<Shot*>& playerShots = player->GetShots();
+    for (vector<Shot*>::const_iterator index = playerShots.begin(); index != playerShots.end(); ) {
         Shot* shot = *index;
         if (shot) {
-            // cout << "Vai avaliar" << endl;
             bool isShotValid = shot->Valid(map);
-            // cout << "avaliou" << endl;
             if (!isShotValid){ 
-                // cout << "Tiro invalido!" << endl;
-                // cout << shot << endl;
-                // playerShots.erase(index);
-                // player->RechargeShot();
-                // delete shot;
+                cout << "Tiro inválido!" << endl;
+                playerShots.erase(index);
+                player->RechargeShot();
             } else {
+                cout << "Tiro válido!" << endl;
+                index++;
                 shot->Move(timeDifference);
             }
         }
     }
+
+    // Movimento dos tiros dos inimigos
+    map->MoveShots(timeDifference);
 
     // <--- Movimento dos inimigos --->
     GLdouble enemyTimeDiff = currentTime - changeActionActualTime;
@@ -193,7 +196,7 @@ void idle (void) {
         map->ChangeEnemiesActions();
         changeActionActualTime = glutGet(GLUT_ELAPSED_TIME);
     }
-    map->ExecuteEnemiesActions(timeDifference);
+    map->ExecuteEnemiesActions(timeDifference, vec2(player->GetgX(), player->GetgY()));
 
    glutPostRedisplay();
 }
@@ -205,8 +208,7 @@ void mouseClick(int button, int state, int x, int y) {
             player->StartJumping();
         }
     } else if(button == 2) {
-        Shot* shot= player->Shoot();
-        playerShots.push_back(shot);
+        player->Shoot();
     }
 }
 
@@ -214,10 +216,11 @@ void mouseMove(int x, int y) {
     y = (Height - y);
     GLfloat normalizedY = (float)y /(float) Height;
     GLfloat normalizedX = (float)x /(float) Width;
-
-    GLfloat transformedX = ( ViewingWidth - (player->GetgX() - (ViewingWidth/2))) * normalizedX;
-    // cout << "x: " << transformedX << "," << normalizedY << endl;
-    player->MoveArmsAngle(x * 2, y * 2);
+    // Transformações para o x e y do mouse coincidirem com o do mapa
+    GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
+    GLfloat transformedX = (player->GetgX() - ViewingWidth/2 ) + ViewingWidth * normalizedX;
+    GLfloat transformedY = ( ViewingHeight * normalizedY) + cameraY;
+    player->MoveArmsAngle(transformedX, transformedY);
 
     glutPostRedisplay();
 }
@@ -228,6 +231,7 @@ void readXMLFile(string filename) {
 
     XMLElement* svg = mapDocument.FirstChildElement("svg");
     XMLElement* aux;
+    bool test = false;
 
     for(aux = svg->FirstChildElement("rect"); aux != nullptr; aux = aux->NextSiblingElement()) {
         if(strcmp(aux->Attribute("fill"),"blue") == 0) {
@@ -237,22 +241,22 @@ void readXMLFile(string filename) {
             cameraY = aux->DoubleAttribute("y"); 
         }
         else if(strcmp(aux->Attribute("fill"), "green") == 0) {
-            player = new Character(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(0, 1, 0));
+            player = new Character(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(0, 1, 0), vec3(1, 1, 1), playerAmmo);
         } else if (strcmp(aux->Attribute("fill"), "black") == 0) {
             Platform p = Platform( aux->DoubleAttribute("x"), - aux->FloatAttribute("y") + (map->GetSizeY() + 2 * map->GetgY())  , aux->DoubleAttribute("width"), aux->DoubleAttribute("height"));
             map->AddPlatform(p);
         } else if(strcmp(aux->Attribute("fill"), "red") == 0) {
-            Enemy* enemy = new Enemy(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(1, 0, 0));
-            
+            if (test) { return;}
+            Enemy* enemy = new Enemy(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(1, 0, 0), vec3(0.7, 0.3, 0.3), enemyAmmo);
+        
             // Gerando e inserindo padrão aleatório de ações
             int random;
             for(int i = 0; i < 20; i++) {
-                random = rand() % 3;
+                random = rand() % 2;
                 enemy->InsertAction(random);
             }
             map->AddEnemy(enemy);
-
-            // enemies.push_back(enemy);
+            test = true;
         }
     }
 }

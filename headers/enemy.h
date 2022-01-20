@@ -30,7 +30,7 @@ protected:
     vector<int> actingPattern;
     int actualAction;
 public:
-    Enemy(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor) : Character(x, y, totalHeight, groundLimit, bodyColor) {
+    Enemy(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor, vec3 shootColor, GLint ammo) : Character(x, y, totalHeight, groundLimit, bodyColor, shootColor, ammo) {
     }
     void DrawEnemy() {
         Character::Draw();
@@ -39,6 +39,7 @@ public:
     void InsertAction(int action);
     void NextAction();
     void DoAction(GLfloat timeDiff, Map* map);
+    void AdjustArms(vec2 playerPosition);
 };
 
 #endif	/* ENEMY_H */

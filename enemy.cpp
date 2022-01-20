@@ -58,17 +58,24 @@ void Enemy::MoveInX(GLdouble timeDiff, Map* map) {
 }
 
 void Enemy::DoAction(GLfloat timeDiff, Map* map) {
+
     switch(actingPattern[actualAction]) {
         case 0: // Andar
             this->MoveInX(timeDiff, map);
             break;
         case 1: // Atirar
             // cout << "Atirando" << endl;
+            this->Shoot();
             break;
         case 2: // Ficar parado
             this->StartStanding();
             break;
     }
+}
+
+void Enemy::AdjustArms(vec2 playerPosition) {
+    // cout << "Player position: " << playerPosition.x << "," << playerPosition.y << endl;
+    this->MoveArmsAngle(playerPosition.x, playerPosition.y);
 }
 
 void Enemy::NextAction() {

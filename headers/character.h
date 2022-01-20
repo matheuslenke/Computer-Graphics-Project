@@ -10,11 +10,13 @@
 #include "utils.h"
 #include "map.h"
 #include "shot.h"
+#include <vector>
 
 // Dimensions
 #define legMovingSpeed 2.0
 #define characterSpeed 0.02
 #define characterJumpingSpeed 0.04
+#define characterAmmo 1
 
 struct hitBox {
     vec2 upLeft;
@@ -51,6 +53,10 @@ protected:
     GLfloat groundLimit;
     vec3 bodyColor;
     GLboolean isShooting;
+    GLint ammo;
+    GLint totalAmmo;
+    vec3 shootColor;
+    vector<Shot*> shots;
 
     void DrawCharacter(GLfloat x, GLfloat y);
     void DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G, GLfloat B);
@@ -66,7 +72,7 @@ protected:
 public:
 
     GLboolean isFacingRight;
-    Character(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor) {
+    Character(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor, vec3 shootColor, GLint totalAmmo) {
         gX = x; 
         gY = y;
         speed = characterSpeed;
@@ -93,6 +99,10 @@ public:
         this->jumpingGround = groundLimit;
         this->bodyColor = bodyColor;
         isShooting = false;
+        ammo = totalAmmo;
+        this->totalAmmo = totalAmmo;
+        this->shootColor = shootColor;
+
     };
     void Draw(){ 
         DrawCharacter(gX, gY);
@@ -110,7 +120,8 @@ public:
     GLfloat GetCharacterGroundY();
     GLfloat GetCharacterHighestY();
     void MoveArmsAngle(GLfloat x, GLfloat y);
-    Shot* Shoot();
+    void Shoot();
+    vector<Shot*>& GetShots();
     void RechargeShot();
     // void Recria(GLfloat x, GLfloat y);
     // bool Atingido(Tiro *tiro);

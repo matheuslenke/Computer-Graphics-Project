@@ -269,34 +269,55 @@ void Character::MoveInY(GLdouble timeDiff, bool isPressingJumpButton, Map* map) 
 void Character::MoveArmsAngle(GLfloat x, GLfloat y) {
     GLfloat armX = this->gX;
     GLfloat armY = this->gY + 0.3 * totalHeight;
-    GLfloat theta = atan2(y - armY, x - armX);
+    // cout << this->gX << " : " << x << endl;
+    if (isFacingRight) {
+        GLfloat theta = atan2(y - armY, x - armX);
+        GLfloat degrees = theta * (180/M_PI); // Convertendo de radianos para graus
+        // cout << degrees << endl;
+        if (degrees < 45 && degrees > -45 ) {
+            this->armTheta = 90 - theta * (180/M_PI);
+        }
+    } else {
+        GLfloat theta = atan2(y - armY, armX - x);
+        GLfloat degrees = theta * (180/M_PI); // Convertendo de radianos para graus
+        // cout << degrees << endl;
+        if (degrees < 45 && degrees > -45 ) {
+            this->armTheta = 90 - theta * (180/M_PI) ;
+        }
 
-    GLfloat degrees = theta * 2 * (180/M_PI); // Convertendo de radianos para graus
-    if (degrees < 45 && degrees > -45 ) {
-        this->armTheta = 90 - theta * (180/M_PI);
     }
+
 
 }
 
-Shot* Character::Shoot() {
-    if (!this->isShooting) {
-        this->isShooting = true;
+// Funcao auxiliar de rotacao para posicionar o tiro
+void RotatePointUtil(GLfloat x, GLfloat y, GLfloat height, GLfloat angle, GLfloat &xOut, GLfloat &yOut){
+    yOut = y + height*sin (angle*M_PI/180);
+    xOut = x + height*cos (angle*M_PI/180);
+}
+
+void Character::Shoot() {
+    if (this->ammo > 0) {
+        // cout << ammo << endl;
         GLfloat tX = this->gX, tY = this->gY, tTheta = 90 + this->armTheta;
-        tX += bodyWidth / 2;
-        tY += 0.3 * totalHeight;
+        tY += 0.2 * totalHeight;
 
         if (isFacingRight) {
             tTheta = 180 - tTheta;
+            RotatePointUtil(tX, tY, this->armHeight , tTheta, tX, tY);
+        } else {
+            RotatePointUtil(tX, tY, this->armHeight , tTheta, tX, tY);
         }
-        // RotatePoint(tX, tY, this->armHeight , -this->armTheta, tX, tY);
-
-        std::cout << "Ponto criado: (" <<  tX << "," << tY << ")" << std::endl;
-        return new Shot(tX, tY, tTheta, armWidth, this->speed * 2);
+        // std::cout << "Ponto criado: (" <<  tX << "," << tY << ")" << std::endl;
+        this->ammo -= 1;
+        Shot* shot = new Shot(tX, tY, tTheta, armWidth, this->speed * 2, this->shootColor);
+        this->shots.push_back(shot);
     }
 }
 
 void Character::RechargeShot() {
-    this->isShooting = false;
+    this->ammo = this->totalAmmo;
+    cout << "Recharging! " << this->ammo << endl;
 }
 
 bool Character::CollidesDownWithAPlatform(Map* map) {
@@ -370,6 +391,11 @@ GLfloat Character::GetCharacterGroundY() {
 GLfloat Character::GetCharacterHighestY() {
     return this->gY + 0.5* this->totalHeight;
 }
+
+vector<Shot*> &Character::GetShots() {
+    return this->shots;
+}
+
 
 
 

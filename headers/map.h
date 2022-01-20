@@ -7,20 +7,24 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #endif
-#include <list>
+#include <vector>
 #include "platform.h"
+#include "util.h"
 
 // Dimensions
 using namespace std;
-class Enemy; // Forward declaration para evitar dependencia ciclica
+// Forward declaration para evitar dependencia ciclica
+class Enemy; 
+class Shot;
+struct vec2;
 
 class Map {
     GLfloat gX; 
     GLfloat gY;
     GLfloat sizeX;
     GLfloat sizeY;
-    list<Platform> platforms;
-    list<Enemy*> enemies;
+    vector<Platform> platforms;
+    vector<Enemy*> enemies;
     int gColor;
 
     void DrawMap(GLfloat x, GLfloat y);
@@ -46,8 +50,12 @@ public:
     GLfloat GetSizeX();
     GLfloat GetSizeY();
     void AddEnemy(Enemy* e);
-    void ExecuteEnemiesActions(GLdouble timeDifference);
+    void ExecuteEnemiesActions(GLdouble timeDifference, vec2 playerPosition);
     void ChangeEnemiesActions();
+    void RechargeEnemies();
+    void DrawShots();
+    void MoveShots(GLdouble timeDifference);
+    void CheckIfEnemyIsHit(vector<Shot*> playerShots);
     // bool Atingido(Tiro *tiro);
 };
 
