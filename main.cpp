@@ -44,6 +44,7 @@ const float FPS = 60;
 // Entidades do jogo
 GLfloat playerHeight = 60;
 Character* player = nullptr; // Personagem principal
+vector<Shot*> playerShots;
 Map* map = nullptr; // Mapa do nível
 GLboolean gameOver = false;
 GLboolean gameWin = false;
@@ -52,8 +53,9 @@ string filename = "arena_teste.svg";
 // Parametros de ação dos inimigos
 GLfloat changeActionActualTime = 0;
 const GLfloat timeToChangeAction = 2; // Tempo em segundos
-const GLint playerAmmo = 1;
+const GLint playerAmmo = 3;
 const GLint enemyAmmo = 1;
+GLboolean enemyStopMoving = false;
 
 // Impressao na tela
 void * font = GLUT_BITMAP_9_BY_15;
@@ -103,7 +105,7 @@ void renderScene(void)
         map->Draw();
         player->Draw();
 
-        for (Shot* shot : player->GetShots() ) {
+        for (Shot* shot : playerShots ) {
             shot->Draw();
         }
         map->DrawShots(); // Tiros dos inimigos
@@ -134,7 +136,7 @@ void readXMLFile(string filename) {
 
     XMLElement* svg = mapDocument.FirstChildElement("svg");
     XMLElement* aux;
-
+    bool t = false;
     for(aux = svg->FirstChildElement("rect"); aux != nullptr; aux = aux->NextSiblingElement()) {
         if(strcmp(aux->Attribute("fill"),"blue") == 0) {
             ViewingHeight = aux->DoubleAttribute("height");
@@ -155,7 +157,10 @@ void readXMLFile(string filename) {
                 random = rand() % 2;
                 enemy->InsertAction(random);
             }
-            map->AddEnemy(enemy);
+            // if(!t) {
+                map->AddEnemy(enemy);
+            // }
+            t = true;
         }
     }
 }
@@ -206,6 +211,9 @@ void keyPress(unsigned char key, int x, int y)
         case 'i':
             keyStatus[(int)('i')] = 1;
             break;
+        case 'p':
+            enemyStopMoving = !enemyStopMoving;
+            break;
         case 27 :
              exit(0);
     }
@@ -253,19 +261,6 @@ void idle (void) {
         gameWin = true;
     }
 
-    // Checagem de colisão
-    vector<Shot*>& playerShots = player->GetShots();
-    // Colisão dos inimigos com tiros do player
-    map->CheckIfEnemyIsHit(playerShots);
-
-    // Colisão do player com tiros dos inimigos
-    if (map->CheckIfPlayerIsHit(player)) {
-        gameOver = true;
-        ResetKeyStatus();
-        glutPostRedisplay();
-        return;
-    }
-
     // Lógica de movimentação dos tiros do player
     for (vector<Shot*>::const_iterator index = playerShots.begin(); index != playerShots.end(); ) {
         Shot* shot = *index;
@@ -289,8 +284,21 @@ void idle (void) {
     if(enemyTimeDiff >= 1 * 1000) { // Muda a cada 1 segundo
         map->ChangeEnemiesActions();
         changeActionActualTime = glutGet(GLUT_ELAPSED_TIME);
+        map->RechargeEnemies();
     }
-    map->ExecuteEnemiesActions(timeDifference, player);
+    map->ExecuteEnemiesActions(timeDifference, player, enemyStopMoving);
+
+    // Checagem de colisão
+    // Colisão dos inimigos com tiros do player
+    map->CheckIfEnemyIsHit(playerShots);
+
+    // Colisão do player com tiros dos inimigos
+    if (map->CheckIfPlayerIsHit(player)) {
+        gameOver = true;
+        ResetKeyStatus();
+        glutPostRedisplay();
+        return;
+    }
 
    glutPostRedisplay();
 }
@@ -303,7 +311,13 @@ void mouseClick(int button, int state, int x, int y) {
             player->StartJumping();
         }
     } else if(button == 2) {
-        player->Shoot();
+        if(state == 1) {
+            Shot* newShot = player->Shoot();
+            if(newShot) {
+                playerShots.push_back(newShot);
+
+            }
+        }
     }
 }
 
@@ -340,6 +354,7 @@ int main(int argc, char** argv)
     glutIdleFunc(idle);
     glutMouseFunc(mouseClick);
     glutPassiveMotionFunc(mouseMove);
+    glutMotionFunc(mouseMove);
 
     init();
 

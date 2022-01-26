@@ -19,6 +19,7 @@ class Character;
 class Shot;
 struct vec2;
 
+
 class Map {
     GLfloat gX; 
     GLfloat gY;
@@ -26,6 +27,7 @@ class Map {
     GLfloat sizeY;
     vector<Platform> platforms;
     vector<Enemy*> enemies;
+    vector <Shot*> enemyShots;
     int gColor;
 
     void DrawMap(GLfloat x, GLfloat y);
@@ -51,7 +53,7 @@ public:
     GLfloat GetSizeX();
     GLfloat GetSizeY();
     void AddEnemy(Enemy* e);
-    void ExecuteEnemiesActions(GLdouble timeDifference, Character* player);
+    void ExecuteEnemiesActions(GLdouble timeDifference, Character* player, GLboolean stopMoving);
     void ChangeEnemiesActions();
     void RechargeEnemies();
     void DrawShots();

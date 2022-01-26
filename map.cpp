@@ -55,12 +55,14 @@ void Map::DrawEnemies() {
 }
 
 void Map::DrawShots() {
-    for (Enemy* enemy : this->enemies) {
-        vector<Shot*> shots = enemy->GetShots();
-        for (Shot* shot : shots) {
-            shot->Draw();
-        }
+    for(Shot* shot : enemyShots) {
+        shot->Draw();
     }
+    // for (Enemy* enemy : this    ->enemies) {
+    //     vector<Shot*> shots = enemy->GetShots();
+    //     for (Shot* shot : shots) {
+    //     }
+    // }
 }
 
 bool Map::ColidesWithAPlatform(GLfloat x, GLfloat y) {
@@ -77,7 +79,6 @@ bool Map::ColidesWithAPlatform(GLfloat x, GLfloat y) {
     for (Platform platform : this->platforms) {
         collides = platform.isColiding(x, y);
         if (collides == true) { return true; }
-        
     }
 
     return collides;
@@ -102,12 +103,15 @@ bool Map::ColidesWithRightEnd(GLfloat x) {
     return false;
 }
 
-void Map::ExecuteEnemiesActions(GLdouble timeDifference, Character* player) {
-    Shot* aux;
+void Map::ExecuteEnemiesActions(GLdouble timeDifference, Character* player, GLboolean stopMoving) {
     vec3 playerPosition = player->getPosition();
     for (Enemy* enemy : this->enemies) {
+        Shot* aux;
         enemy->AdjustArms(vec2(playerPosition.x, playerPosition.y));
-        enemy->DoAction(timeDifference, this, player);
+        aux = enemy->DoAction(timeDifference, this, player, stopMoving);
+        if (aux != nullptr) {
+            enemyShots.push_back(aux);
+        }
     }
 }
 
@@ -124,22 +128,18 @@ void Map::RechargeEnemies() {
 }
 
 void Map::MoveShots(GLdouble timeDifference) {
-    for(Enemy* enemy: this->enemies) {
-        vector<Shot*>& enemyShots = enemy->GetShots();
-        for (vector<Shot*>::iterator index = enemyShots.begin(); index != enemyShots.end(); ) {
-            Shot* shot = *index;
-            if (shot) {
-                bool isShotValid = shot->Valid(this);
-                if (!isShotValid){ 
-                    enemyShots.erase(index);
-                    enemy->RechargeShot();
-                } else {
-                    index++;
-                    shot->Move(timeDifference);
-                }
+
+    for(vector<Shot*>::iterator index = enemyShots.begin(); index != enemyShots.end(); ) {
+        Shot* shot = *index;
+        if (shot) {
+            bool isShotValid = shot->Valid(this);
+            if(!isShotValid) {
+                enemyShots.erase(index);
+            } else {
+                index++;
+                shot->Move(timeDifference);
             }
         }
-
     }
 }
 
@@ -149,19 +149,8 @@ void Map::CheckIfEnemyIsHit(vector<Shot*> playerShots) {
             Enemy* enemy = *index;
             vec2 shotPos = shot->GetPos();
             GLfloat shotRadius = shot->GetRadius();
-            GLboolean collides = false;
-            int numSegments = 10;
-            for(int j = 0; j <= numSegments ; j+=1) {
-                float theta = 2.0f * 3.1415926f * float(j) / float(numSegments);//get the current angle
-                float x = shotRadius * cosf(theta);//calculate the x component
-                float y = shotRadius * sinf(theta);//calculate the y component
-                if(enemy->CollidesWithPoint(shotPos.x + x, shotPos.y + y)) {
-                    collides = true;
-                    shot->SetHittedEnemy();
-                    break;
-                }
-            }
-            if(collides) {
+            if(enemy->CollidesWithPoint(shotPos.x, shotPos.y)) {
+                shot->SetHittedEnemy();
                 this->enemies.erase(index);
             } else {
                 index++;
@@ -195,25 +184,18 @@ GLfloat Map::GetSizeY() {
 }
 
 GLboolean Map::CheckIfPlayerIsHit(Character* player) {
-    for(Enemy* enemy : this->enemies) {
-        vector<Shot*>& enemyShots = enemy->GetShots();
-        for(Shot* shot : enemyShots) {    
-            vec2 shotPos = shot->GetPos();
-            GLfloat shotRadius = shot->GetRadius();
-            GLboolean collides = false;
-            int numSegments = 10;
-            for(int j = 0; j <= numSegments ; j+=1) {
-                float theta = 2.0f * 3.1415926f * float(j) / float(numSegments);//get the current angle
-                float x = shotRadius * cosf(theta);//calculate the x component
-                float y = shotRadius * sinf(theta);//calculate the y component
-                if(player->CollidesWithPoint(shotPos.x + x, shotPos.y + y)) {
-                    collides = true;
-                    shot->SetHittedEnemy();
-                    return collides;
-                }
-            }
-            return collides;
+    for(vector<Shot*>::iterator index = this->enemyShots.begin(); index != this->enemyShots.end();) {   
+        Shot* shot = *index;
+        vec2 shotPos = shot->GetPos();
+        GLfloat shotRadius = shot->GetRadius();
+        vec3 playerPosition = player->getPosition();
+        if(player->CollidesWithPoint(shotPos.x, shotPos.y) == true) {
+            shot->SetHittedEnemy();
+            return true;
+        } else {
+            index++;
         }
     }
+    
     return false;
 }

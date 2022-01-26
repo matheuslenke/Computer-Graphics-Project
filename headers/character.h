@@ -13,9 +13,7 @@
 #include <vector>
 
 // Dimensions
-#define legMovingSpeed 2.0
-#define characterSpeed 0.02
-#define characterJumpingSpeed 0.04
+#define legMovingSpeed 2.5
 #define characterAmmo 1
 
 struct hitBox {
@@ -56,7 +54,6 @@ protected:
     GLint ammo;
     GLint totalAmmo;
     vec3 shootColor;
-    vector<Shot*> shots;
 
     void DrawCharacter(GLfloat x, GLfloat y);
     void DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G, GLfloat B);
@@ -66,8 +63,8 @@ protected:
     void DrawHitbox();
     bool CollidesLeftWithAPlatform(GLfloat inc, Map* map);
     bool CollidesRightWithAPlatform(GLfloat inc, Map* map);
-    bool CollidesDownWithAPlatform(Map* map);
-    bool CollidesUpWithAPlatform(Map* map);
+    bool CollidesDownWithAPlatform(GLfloat inc, Map* map);
+    bool CollidesUpWithAPlatform(GLfloat inc, Map* map);
 
 public:
 
@@ -75,13 +72,13 @@ public:
     Character(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor, vec3 shootColor, GLint totalAmmo) {
         gX = x; 
         gY = y;
-        speed = characterSpeed;
-        isFacingRight = true;
+
         this->totalHeight = totalHeight;
         leg1Theta1 = 0;
         leg1Theta2 = 0;
         leg2Theta1 = 0;
         leg2Theta2 = 0;
+        armTheta = 90;
         legHeight = totalHeight * 0.2;
         legWidth = totalHeight * 0.1;
         bodyHeight = totalHeight * 0.4;
@@ -89,12 +86,14 @@ public:
         radiusHead = totalHeight * 0.1;
         armHeight = totalHeight * 0.3;
         armWidth = totalHeight * 0.1;
-        armTheta = 90;
-        da = legMovingSpeed;
-        da2 = -legMovingSpeed;
-        this->jumpingSpeed = characterJumpingSpeed;
+
+        speed = totalHeight * 0.0025;
+        this->jumpingSpeed = speed * 2;
         isJumping = false;
         hasJumpedToMax = false;
+        da = legMovingSpeed;
+        da2 = -legMovingSpeed;
+        isFacingRight = true;
         this->groundLimit = groundLimit;
         this->jumpingGround = groundLimit;
         this->bodyColor = bodyColor;
@@ -122,8 +121,7 @@ public:
     GLfloat GetBodyWidth();
     GLfloat GetTotalHeight();
     void MoveArmsAngle(GLfloat x, GLfloat y);
-    void Shoot();
-    vector<Shot*>& GetShots();
+    Shot* Shoot();
     void RechargeShot();
     bool CollidesWithPoint(GLfloat x, GLfloat y);
     bool CollidesWithEndOfMap(Map* map);

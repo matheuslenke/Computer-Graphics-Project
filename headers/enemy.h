@@ -14,11 +14,6 @@
 #include <vector>
 #include <iostream>
 
-// Dimensions
-#define legMovingSpeed 2.0
-#define characterSpeed 0.02
-#define characterJumpingSpeed 0.04
-
 using namespace std;
 
 class Enemy : public Character {
@@ -35,6 +30,7 @@ protected:
     GLboolean CollidesLeftWithCharacter(Character* character, GLfloat inc);
 public:
     Enemy(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor, vec3 shootColor, GLint ammo) : Character(x, y, totalHeight, groundLimit, bodyColor, shootColor, ammo) {
+        actualAction = 0;
     }
     void DrawEnemy() {
         Character::Draw();
@@ -42,7 +38,7 @@ public:
     void MoveInX(GLdouble timeDiff, Map* map, Character* player);
     void InsertAction(int action);
     void NextAction();
-    void DoAction(GLfloat timeDiff, Map* map, Character* player);
+    Shot* DoAction(GLfloat timeDiff, Map* map, Character* player, GLboolean stopMoving);
     void AdjustArms(vec2 playerPosition);
 };
 

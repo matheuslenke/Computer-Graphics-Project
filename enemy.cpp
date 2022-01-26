@@ -4,7 +4,7 @@ using namespace std;
 
 void Enemy::MoveInX(GLdouble timeDiff, Map* map, Character* player) {
   GLfloat inc = this->speed * timeDiff;
-  if(!CollidesDownWithAPlatform(map)) {
+  if(!CollidesDownWithAPlatform(inc, map)) {
     this->isFacingRight = !this->isFacingRight;
     if (isFacingRight) {
       this->gX += inc;
@@ -68,36 +68,39 @@ void Enemy::MoveInX(GLdouble timeDiff, Map* map, Character* player) {
     }
 }
 
-void Enemy::DoAction(GLfloat timeDiff, Map* map, Character* player) {
+Shot* Enemy::DoAction(GLfloat timeDiff, Map* map, Character* player, GLboolean stopMoving) {
+    Shot* aux = nullptr;
+    int action = this->actingPattern[actualAction];
+    if (action == 0 && !stopMoving) {
+        this->MoveInX(timeDiff, map, player);
+    } else if (action == 1) {
+        aux = this->Shoot();
+        if (aux) {
+            vec2 shotPos = aux->GetPos();
+        }
 
-    switch(actingPattern[actualAction]) {
-        case 0: // Andar
-            this->MoveInX(timeDiff, map, player);
-            break;
-        case 1: // Atirar
-            this->Shoot();
-            break;
-        case 2: // Ficar parado
-            this->StartStanding();
-            break;
+    } else if (action == 2) {
+        this->StartStanding();
     }
+
+    return aux;
 }
 
 GLboolean Enemy::CollidesUpWithCharacter(Character* character, GLfloat inc) {
-    if (character->CollidesWithPoint(this->gX - this->bodyWidth/2, this->gY + 0.6*totalHeight) == true) {
+    if (character->CollidesWithPoint(this->gX - this->bodyWidth/2, this->gY + 0.5*totalHeight + inc) == true) {
         return true;
     }
-    if (character->CollidesWithPoint(this->gX + this->bodyWidth/2, this->gY + 0.6*totalHeight) == true) {
+    if (character->CollidesWithPoint(this->gX + this->bodyWidth/2, this->gY + 0.5*totalHeight + inc) == true) {
         return true;
     }
     return false;
 }
 
 GLboolean Enemy::CollidesDownWithCharacter(Character* character, GLfloat inc) {
-    if (character->CollidesWithPoint(this->gX - this->bodyWidth/2, this->gY - 0.6*totalHeight) == true) {
+    if (character->CollidesWithPoint(this->gX - this->bodyWidth/2, this->gY - 0.5*totalHeight - inc) == true) {
         return true;
     }
-    if (character->CollidesWithPoint(this->gX + this->bodyWidth/2, this->gY - 0.6*totalHeight) == true) {
+    if (character->CollidesWithPoint(this->gX + this->bodyWidth/2, this->gY - 0.5*totalHeight - inc) == true) {
         return true;
     }
     return false;
@@ -120,7 +123,6 @@ GLboolean Enemy::CollidesLeftWithCharacter(Character* character, GLfloat inc) {
     }
     return false;
 }
-
 
 void Enemy::AdjustArms(vec2 playerPosition) {
     this->MoveArmsAngle(playerPosition.x, playerPosition.y);

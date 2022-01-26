@@ -180,6 +180,7 @@ void Character::StartStanding() {
 
 /* <-- Seção de Movimentos e Lógica --> */
 void Character::MoveInX(bool isToRight, GLdouble timeDiff, Map* map) {
+
     if (isToRight) {
         GLfloat inc = this->speed * timeDiff;
         if (CollidesRightWithAPlatform(inc, map) == true) {
@@ -221,30 +222,31 @@ void Character::MoveInX(bool isToRight, GLdouble timeDiff, Map* map) {
 }
 
 void Character::MoveInY(GLdouble timeDiff, bool isPressingJumpButton, Map* map) {
-    if (CollidesDownWithAPlatform(map) && !this->isJumping) {
+    GLfloat inc = this->jumpingSpeed * timeDiff;
+    if (CollidesDownWithAPlatform(inc, map) && !this->isJumping) {
         return;
     }
-    GLfloat inc = this->jumpingSpeed * timeDiff;
 
-    if (CollidesUpWithAPlatform(map)) {
+    if (CollidesUpWithAPlatform(inc, map)) {
         hasJumpedToMax = true;
     }
 
     if (this->isJumping) {
         if (isPressingJumpButton) {
-            if(this->gY >= this->jumpingGround + 3 * totalHeight) {
+            GLfloat cground = this->GetCharacterGroundY();
+            if(cground >= this->jumpingGround + 3 * totalHeight) {
                 hasJumpedToMax = true;
             }
-            if(this->gY <= this->jumpingGround + 3 * totalHeight && hasJumpedToMax == false) {
+            if(cground <= this->jumpingGround + 3 * totalHeight && hasJumpedToMax == false) {
                 this->gY += inc;
             } else if(this->gY >= this->groundLimit) {
                 this->gY -= inc;
             }
-        } else if (!CollidesDownWithAPlatform(map)) {
+        } else if (!CollidesDownWithAPlatform(inc, map)) {
             this->gY -= inc;
             hasJumpedToMax = true;
         } 
-        if(CollidesDownWithAPlatform(map)) {
+        if(CollidesDownWithAPlatform(inc, map)) {
             isJumping = false; 
             hasJumpedToMax = false;
             this->leg1Theta1 = 0;
@@ -279,10 +281,7 @@ void Character::MoveArmsAngle(GLfloat x, GLfloat y) {
         if (degrees < 45 && degrees > -45 ) {
             this->armTheta = 90 - theta * (180/M_PI) ;
         }
-
     }
-
-
 }
 
 // Funcao auxiliar de rotacao para posicionar o tiro
@@ -291,7 +290,7 @@ void RotatePointUtil(GLfloat x, GLfloat y, GLfloat height, GLfloat angle, GLfloa
     xOut = x + height*cos (angle*M_PI/180);
 }
 
-void Character::Shoot() {
+Shot* Character::Shoot() {
     if (this->ammo > 0) {
         // cout << ammo << endl;
         GLfloat tX = this->gX, tY = this->gY, tTheta = 90 + this->armTheta;
@@ -305,44 +304,44 @@ void Character::Shoot() {
         }
         this->ammo -= 1;
         Shot* shot = new Shot(tX, tY, tTheta, armWidth, this->speed * 2, this->shootColor);
-        this->shots.push_back(shot);
+        return shot;
     }
+    return nullptr;
 }
 
 void Character::RechargeShot() {
     this->ammo = this->totalAmmo;
 }
 
-bool Character::CollidesDownWithAPlatform(Map* map) {
+bool Character::CollidesDownWithAPlatform(GLfloat inc, Map* map) {
     if (GetCharacterGroundY() <= this->groundLimit) {
-        this->gY = groundLimit + 0.6 * totalHeight;
         return true;
     }
-    if (map->ColidesWithAPlatform(this->gX - this->bodyWidth/2, this->gY - 0.6*totalHeight) == true
+    if (map->ColidesWithAPlatform(this->gX - this->bodyWidth/2, this->gY - 0.5*totalHeight - inc) == true
         ||
-        map->CollidesWithEnemy(this->gX - this->bodyWidth/2, this->gY - 0.6*totalHeight) == true
+        map->CollidesWithEnemy(this->gX - this->bodyWidth/2, this->gY - 0.5*totalHeight - inc) == true
         ) {
         return true;
     }
-    if (map->ColidesWithAPlatform(this->gX + this->bodyWidth/2, this->gY - 0.6*totalHeight) == true
+    if (map->ColidesWithAPlatform(this->gX + this->bodyWidth/2, this->gY - 0.5*totalHeight - inc) == true
         ||
-        map->CollidesWithEnemy(this->gX + this->bodyWidth/2, this->gY - 0.6*totalHeight) == true
+        map->CollidesWithEnemy(this->gX + this->bodyWidth/2, this->gY - 0.5*totalHeight - inc) == true
     ) {
         return true;
     }
     return false;
 }
 
-bool Character::CollidesUpWithAPlatform(Map* map) {
-    if (map->ColidesWithAPlatform(this->gX - this->bodyWidth/2, this->gY + 0.5*totalHeight) == true
+bool Character::CollidesUpWithAPlatform(GLfloat inc, Map* map) {
+    if (map->ColidesWithAPlatform(this->gX - this->bodyWidth/2, this->gY + 0.5*totalHeight + inc) == true
         ||
-        map->CollidesWithEnemy(this->gX - this->bodyWidth/2, this->gY + 0.5*totalHeight) == true   
+        map->CollidesWithEnemy(this->gX - this->bodyWidth/2, this->gY + 0.5*totalHeight + inc) == true   
     ) {
         return true;
     }
-    if (map->ColidesWithAPlatform(this->gX + this->bodyWidth/2, this->gY + 0.5*totalHeight) == true
+    if (map->ColidesWithAPlatform(this->gX + this->bodyWidth/2, this->gY + 0.5*totalHeight + inc) == true
         ||
-        map->CollidesWithEnemy(this->gX + this->bodyWidth/2, this->gY + 0.5*totalHeight) == true  
+        map->CollidesWithEnemy(this->gX + this->bodyWidth/2, this->gY + 0.5*totalHeight + inc) == true  
     ) {
         return true;
     }
@@ -417,10 +416,6 @@ GLfloat Character::GetCharacterGroundY() {
 
 GLfloat Character::GetCharacterHighestY() {
     return this->gY + 0.51* this->totalHeight;
-}
-
-vector<Shot*> &Character::GetShots() {
-    return this->shots;
 }
 
 GLfloat Character::GetBodyWidth() {
