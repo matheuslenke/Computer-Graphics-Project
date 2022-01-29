@@ -7,6 +7,7 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #endif
+#include "utils.h"
 
 // Dimensions
 
@@ -30,6 +31,10 @@ public:
         DrawPlatform(gX, gY);
     };
     bool isColiding(GLfloat x, GLfloat y);
+    vec2 *ReturnPlatformXLimits() {
+        vec2* pos = new vec2(this->gX, this->gX + sizeX);
+        return pos;
+    }
     // void Recria(GLfloat x, GLfloat y);
     // bool Atingido(Tiro *tiro);
 };

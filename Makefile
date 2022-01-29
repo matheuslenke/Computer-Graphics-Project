@@ -25,4 +25,4 @@ clean:
 	rm -rf *.o $(EXEC)
 
 run: all
-	./$(EXEC) 
+	./$(EXEC) $(FILE)

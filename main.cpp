@@ -48,7 +48,7 @@ vector<Shot*> playerShots;
 Map* map = nullptr; // Mapa do nível
 GLboolean gameOver = false;
 GLboolean gameWin = false;
-string filename = "arena_teste.svg";
+string filename = "arenas/arena_teste.svg";
 
 // Parametros de ação dos inimigos
 GLfloat changeActionActualTime = 0;
@@ -337,7 +337,12 @@ void mouseMove(int x, int y) {
 
 int main(int argc, char** argv)
 {
-    readXMLFile(filename);
+    if(argc != 2) {
+        cout << "Por favor informe o nome do arquivo SVG" << endl;
+        return 0;
+    }
+    cout << "Lendo arena: " << argv[1] << endl;
+    readXMLFile(argv[1]);
 
     glutInit(&argc, argv);
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);

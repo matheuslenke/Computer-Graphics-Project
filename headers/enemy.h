@@ -24,6 +24,10 @@ protected:
     */
     vector<int> actingPattern;
     int actualAction;
+    GLboolean foundGround = false;
+    GLboolean isOnPlatform = false;
+    GLfloat minWalkingX;
+    GLfloat maxWalkingX;
     GLboolean CollidesUpWithCharacter(Character* character, GLfloat inc);
     GLboolean CollidesDownWithCharacter(Character* character, GLfloat inc);
     GLboolean CollidesRightWithCharacter(Character* character, GLfloat inc);
@@ -35,6 +39,7 @@ public:
     void DrawEnemy() {
         Character::Draw();
     }
+    void MoveInY(GLdouble timeDiff, Map* map, Character* player);
     void MoveInX(GLdouble timeDiff, Map* map, Character* player);
     void InsertAction(int action);
     void NextAction();

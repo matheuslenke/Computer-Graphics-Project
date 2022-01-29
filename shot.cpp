@@ -39,7 +39,7 @@ void Shot::Move(GLdouble timeDifference)
 
 bool Shot::Valid(Map* map)
 {
-    if (this->hittedEnemy == true) { return false; }
+    if (this->hitted == true) { return false; }
     GLboolean isValid = true;
     int numSegments = 20;
     for(int j = 0; j <= numSegments ; j+=1) {

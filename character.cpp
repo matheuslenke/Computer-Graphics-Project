@@ -303,7 +303,7 @@ Shot* Character::Shoot() {
             RotatePointUtil(tX, tY, this->armHeight , tTheta, tX, tY);
         }
         this->ammo -= 1;
-        Shot* shot = new Shot(tX, tY, tTheta, armWidth, this->speed * 2, this->shootColor);
+        Shot* shot = new Shot(tX, tY, tTheta, armWidth * 0.6, this->speed * 2, this->shootColor);
         return shot;
     }
     return nullptr;

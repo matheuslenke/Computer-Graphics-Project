@@ -19,7 +19,7 @@ class Shot {
     GLdouble gDirectionAng;
     GLdouble gVel;
     GLdouble shotRadius;
-    GLboolean hittedEnemy;
+    GLboolean hitted;
     vec3 color;
 private:
     void DrawCirc(GLdouble radius, GLfloat R, GLfloat G, GLfloat B);
@@ -34,7 +34,7 @@ public:
         gVel = speed;
         this->shotRadius = shotRadius;
         this->color = color;
-        hittedEnemy = false;
+        hitted = false;
     };
     void Draw(){ 
         DrawShot(gX, gY);
@@ -45,8 +45,8 @@ public:
         return vec2(this->gX, this->gY);
     };
     GLfloat GetRadius();
-    void SetHittedEnemy() {
-        hittedEnemy = true;
+    void SetHitted() {
+        hitted = true;
     }
 };
 

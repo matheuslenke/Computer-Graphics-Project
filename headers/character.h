@@ -89,7 +89,7 @@ public:
 
         speed = totalHeight * 0.0025;
         this->jumpingSpeed = speed * 2;
-        isJumping = false;
+        isJumping = true;
         hasJumpedToMax = false;
         da = legMovingSpeed;
         da2 = -legMovingSpeed;

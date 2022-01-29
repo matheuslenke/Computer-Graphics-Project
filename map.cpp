@@ -58,11 +58,6 @@ void Map::DrawShots() {
     for(Shot* shot : enemyShots) {
         shot->Draw();
     }
-    // for (Enemy* enemy : this    ->enemies) {
-    //     vector<Shot*> shots = enemy->GetShots();
-    //     for (Shot* shot : shots) {
-    //     }
-    // }
 }
 
 bool Map::ColidesWithAPlatform(GLfloat x, GLfloat y) {
@@ -82,6 +77,16 @@ bool Map::ColidesWithAPlatform(GLfloat x, GLfloat y) {
     }
 
     return collides;
+}
+
+vec2 *Map::GetPlatformLimitsAtPoint(GLfloat x, GLfloat y) {
+    // Colisão com alguma plataforma
+    for (Platform platform : this->platforms) {
+        if(platform.isColiding(x, y)) {
+            return platform.ReturnPlatformXLimits();
+        }
+    }
+    return nullptr;
 }
 
 bool Map::CollidesWithEnemy(GLfloat x, GLfloat y) {
@@ -143,6 +148,8 @@ void Map::MoveShots(GLdouble timeDifference) {
     }
 }
 
+
+// <--- Colisões --->
 void Map::CheckIfEnemyIsHit(vector<Shot*> playerShots) {
     for(Shot* shot : playerShots) {
         for(vector<Enemy*>::iterator index = enemies.begin(); index != enemies.end();) {
@@ -150,7 +157,7 @@ void Map::CheckIfEnemyIsHit(vector<Shot*> playerShots) {
             vec2 shotPos = shot->GetPos();
             GLfloat shotRadius = shot->GetRadius();
             if(enemy->CollidesWithPoint(shotPos.x, shotPos.y)) {
-                shot->SetHittedEnemy();
+                shot->SetHitted();
                 this->enemies.erase(index);
             } else {
                 index++;
@@ -159,6 +166,24 @@ void Map::CheckIfEnemyIsHit(vector<Shot*> playerShots) {
     }
 }
 
+GLboolean Map::CheckIfPlayerIsHit(Character* player) {
+    for(vector<Shot*>::iterator index = this->enemyShots.begin(); index != this->enemyShots.end();) {   
+        Shot* shot = *index;
+        vec2 shotPos = shot->GetPos();
+        GLfloat shotRadius = shot->GetRadius();
+        vec3 playerPosition = player->getPosition();
+        if(player->CollidesWithPoint(shotPos.x, shotPos.y) == true) {
+            shot->SetHitted();
+            return true;
+        } else {
+            index++;
+        }
+    }
+    
+    return false;
+}
+
+// <--- Getters e Setters --->
 void Map::AddPlatform(Platform p) {
     this->platforms.push_back(p);
 }
@@ -183,19 +208,11 @@ GLfloat Map::GetSizeY() {
     return this->sizeY;
 }
 
-GLboolean Map::CheckIfPlayerIsHit(Character* player) {
-    for(vector<Shot*>::iterator index = this->enemyShots.begin(); index != this->enemyShots.end();) {   
-        Shot* shot = *index;
-        vec2 shotPos = shot->GetPos();
-        GLfloat shotRadius = shot->GetRadius();
-        vec3 playerPosition = player->getPosition();
-        if(player->CollidesWithPoint(shotPos.x, shotPos.y) == true) {
-            shot->SetHittedEnemy();
-            return true;
-        } else {
-            index++;
-        }
+Map::~Map() {
+    for (Enemy *enemy : this->enemies) {
+        delete enemy;
     }
-    
-    return false;
+    for (Shot* shot: enemyShots) {
+        delete shot;
+    }
 }

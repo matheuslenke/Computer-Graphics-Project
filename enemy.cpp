@@ -4,17 +4,21 @@ using namespace std;
 
 void Enemy::MoveInX(GLdouble timeDiff, Map* map, Character* player) {
   GLfloat inc = this->speed * timeDiff;
-  if(!CollidesDownWithAPlatform(inc, map)) {
-    this->isFacingRight = !this->isFacingRight;
-    if (isFacingRight) {
-      this->gX += inc;
-    } else {
-      this->gX -= inc;
+  if(foundGround && isOnPlatform) {
+    if(this->gX <= this->minWalkingX) {
+        this->isFacingRight = true;
+    } else if (this->gX >= this->maxWalkingX) {
+        this->isFacingRight = false;
     }
   }
   if(CollidesUpWithCharacter(player, inc) || CollidesDownWithCharacter(player, inc)) {
       Character::StartStanding();
       return;
+  }
+  if (CollidesRightWithAPlatform(inc, map)) {
+      this->isFacingRight = false;
+  } else if (CollidesLeftWithAPlatform(inc, map)) {
+      this->isFacingRight = true;
   }
   if (isFacingRight) {
         if(CollidesRightWithCharacter(player, inc) == true ){
@@ -68,9 +72,32 @@ void Enemy::MoveInX(GLdouble timeDiff, Map* map, Character* player) {
     }
 }
 
+void Enemy::MoveInY(GLdouble timeDiff, Map* map, Character* player) {
+    if (foundGround) {
+        return;
+    }
+    GLfloat inc = this->jumpingSpeed * timeDiff;
+
+    if (CollidesDownWithAPlatform(inc, map)) {
+        foundGround = true;
+        this->groundLimit = Character::GetCharacterGroundY();
+        vec2* positionX = map->GetPlatformLimitsAtPoint(this->gX - this->bodyWidth/2, this->gY - 0.5*totalHeight - inc);
+        if (positionX != nullptr) {
+            this->minWalkingX = positionX->x;
+            this->maxWalkingX = positionX->y;
+            isOnPlatform = true;
+        }
+        isJumping = false;
+        return;
+    } else {
+        this->gY -= inc;
+    }
+}
+
 Shot* Enemy::DoAction(GLfloat timeDiff, Map* map, Character* player, GLboolean stopMoving) {
     Shot* aux = nullptr;
     int action = this->actingPattern[actualAction];
+    this->MoveInY(timeDiff, map, player);
     if (action == 0 && !stopMoving) {
         this->MoveInX(timeDiff, map, player);
     } else if (action == 1) {

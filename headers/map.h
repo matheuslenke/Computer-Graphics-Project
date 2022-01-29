@@ -42,11 +42,13 @@ public:
         this->sizeX = sizeX;
         this->sizeY = sizeY;
     };
+    ~Map();
     void Draw(){ 
         DrawMap(gX, gY);
     };
     void CreateMapFromSVG();
     bool ColidesWithAPlatform(GLfloat x, GLfloat y);
+    vec2* GetPlatformLimitsAtPoint(GLfloat x, GLfloat y);
     void AddPlatform(Platform p);
     GLfloat GetgX();
     GLfloat GetgY();
