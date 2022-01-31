@@ -1,0 +1,3 @@
+/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/CMakeFiles/2DGameTest.dir

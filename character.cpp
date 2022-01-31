@@ -310,13 +310,16 @@ Shot* Character::Shoot() {
 }
 
 void Character::RechargeShot() {
-    this->ammo = this->totalAmmo;
+    if(this->ammo <= totalAmmo) {
+        this->ammo += 1;
+    }
 }
 
 bool Character::CollidesDownWithAPlatform(GLfloat inc, Map* map) {
     if (GetCharacterGroundY() <= this->groundLimit) {
         return true;
     }
+    if (inc == 0) { return false;}
     if (map->ColidesWithAPlatform(this->gX - this->bodyWidth/2, this->gY - 0.5*totalHeight - inc) == true
         ||
         map->CollidesWithEnemy(this->gX - this->bodyWidth/2, this->gY - 0.5*totalHeight - inc) == true

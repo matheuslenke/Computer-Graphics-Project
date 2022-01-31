@@ -42,7 +42,7 @@ protected:
     GLfloat leg2Theta2;
     GLfloat armTheta;
     GLfloat speed;
-    GLfloat jumpingSpeed;
+    GLdouble jumpingSpeed;
     GLfloat jumpingGround;
     GLboolean isJumping;
     GLboolean hasJumpedToMax;
@@ -87,7 +87,7 @@ public:
         armHeight = totalHeight * 0.3;
         armWidth = totalHeight * 0.1;
 
-        speed = totalHeight * 0.0025;
+        speed = totalHeight * 0.0028;
         this->jumpingSpeed = speed * 2;
         isJumping = true;
         hasJumpedToMax = false;

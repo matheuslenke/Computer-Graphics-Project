@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="2DGameTest"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="2DGameTest">
+				<Option output="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/2DGameTest" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 2DGameTest"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="2DGameTest/fast">
+				<Option output="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/2DGameTest" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 2DGameTest/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/matheus/Developer/UFES/Computer-Graphics-Project2D/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/character.cpp">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/enemy.cpp">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/headers/character.h">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/headers/enemy.h">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/headers/map.h">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/headers/platform.h">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/headers/shot.h">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/headers/utils.h">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/main.cpp">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/map.cpp">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/platform.cpp">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/shot.cpp">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/tinyxml2.cpp">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/tinyxml2.h">
+			<Option target="2DGameTest"/>
+		</Unit>
+		<Unit filename="/home/matheus/Developer/UFES/Computer-Graphics-Project2D/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

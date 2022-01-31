@@ -9,7 +9,7 @@
 #endif
 #include <vector>
 #include "platform.h"
-#include "util.h"
+#include "utils.h"
 
 // Dimensions
 using namespace std;
@@ -17,8 +17,6 @@ using namespace std;
 class Enemy; 
 class Character;
 class Shot;
-struct vec2;
-
 
 class Map {
     GLfloat gX; 

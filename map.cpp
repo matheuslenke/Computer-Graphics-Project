@@ -140,6 +140,7 @@ void Map::MoveShots(GLdouble timeDifference) {
             bool isShotValid = shot->Valid(this);
             if(!isShotValid) {
                 enemyShots.erase(index);
+                delete shot;
             } else {
                 index++;
                 shot->Move(timeDifference);

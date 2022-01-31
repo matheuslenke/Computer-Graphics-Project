@@ -13,7 +13,7 @@ endif
 LIBSFOLDER = headers
 SRC ?= *.cpp
 OBJ = $(SRC:.cc=.o)
-EXEC = run.app
+EXEC = trabalhocg
 CPATH = /headers
 
 all: clean $(EXEC)

@@ -37,18 +37,16 @@ GLfloat cameraY = 0;
 
 int keyStatus[256];
 int cursorPressStatus = 1;
-
 // FPS
-const float FPS = 60;
+const GLdouble FPS = 10.0;
 
 // Entidades do jogo
-GLfloat playerHeight = 60;
 Character* player = nullptr; // Personagem principal
 vector<Shot*> playerShots;
 Map* map = nullptr; // Mapa do nível
 GLboolean gameOver = false;
 GLboolean gameWin = false;
-string filename = "arenas/arena_teste.svg";
+string filename = "";
 
 // Parametros de ação dos inimigos
 GLfloat changeActionActualTime = 0;
@@ -136,7 +134,8 @@ void readXMLFile(string filename) {
 
     XMLElement* svg = mapDocument.FirstChildElement("svg");
     XMLElement* aux;
-    bool t = false;
+    vector<Enemy*> enemies;
+    vector<Platform> platforms;
     for(aux = svg->FirstChildElement("rect"); aux != nullptr; aux = aux->NextSiblingElement()) {
         if(strcmp(aux->Attribute("fill"),"blue") == 0) {
             ViewingHeight = aux->DoubleAttribute("height");
@@ -148,7 +147,7 @@ void readXMLFile(string filename) {
             player = new Character(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(0, 1, 0), vec3(1, 1, 1), playerAmmo);
         } else if (strcmp(aux->Attribute("fill"), "black") == 0) {
             Platform p = Platform( aux->DoubleAttribute("x"), - aux->FloatAttribute("y") + (map->GetSizeY() + 2 * map->GetgY())  , aux->DoubleAttribute("width"), aux->DoubleAttribute("height"));
-            map->AddPlatform(p);
+            platforms.push_back(p);
         } else if(strcmp(aux->Attribute("fill"), "red") == 0) {
             Enemy* enemy = new Enemy(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(1, 0, 0), vec3(0.7, 0.3, 0.3), enemyAmmo);
             // Gerando e inserindo padrão aleatório de ações
@@ -157,11 +156,14 @@ void readXMLFile(string filename) {
                 random = rand() % 2;
                 enemy->InsertAction(random);
             }
-            // if(!t) {
-                map->AddEnemy(enemy);
-            // }
-            t = true;
+            enemies.push_back(enemy);
         }
+    }
+    for (Enemy* enemy : enemies) {
+        map->AddEnemy(enemy);
+    }
+    for(Platform p : platforms) {
+        map->AddPlatform(p);
     }
 }
 
@@ -229,16 +231,14 @@ void keyUp(unsigned char key, int x, int y)
 
 void idle (void) {
     GLdouble currentTime, timeDifference;
-    do {
-        static GLdouble previousTime =  glutGet(GLUT_ELAPSED_TIME);
-        //Pega o tempo que passou do inicio da aplicacao
-        currentTime = glutGet(GLUT_ELAPSED_TIME);
-        // Calcula o tempo decorrido desde de a ultima frame.
-        timeDifference = currentTime - previousTime;
-        //Atualiza o tempo do ultimo frame ocorrido
-        previousTime = currentTime;
-    } while (timeDifference < 1.0 / FPS);
-
+    static GLdouble previousTime =  glutGet(GLUT_ELAPSED_TIME);
+    //Pega o tempo que passou do inicio da aplicacao
+    currentTime = glutGet(GLUT_ELAPSED_TIME);
+    // Calcula o tempo decorrido desde de a ultima frame.
+    timeDifference = currentTime - previousTime;
+    //Atualiza o tempo do ultimo frame ocorrido
+    previousTime = currentTime;
+    
     if (gameOver || gameWin) { return; }
 
     // <--- Movimento do Player --->
@@ -268,6 +268,7 @@ void idle (void) {
             bool isShotValid = shot->Valid(map);
             if (!isShotValid){ 
                 playerShots.erase(index);
+                delete shot;
                 player->RechargeShot();
             } else {
                 index++;
@@ -280,13 +281,13 @@ void idle (void) {
     map->MoveShots(timeDifference);
 
     // <--- Movimento dos inimigos --->
+    map->ExecuteEnemiesActions(timeDifference, player, enemyStopMoving);
     GLdouble enemyTimeDiff = currentTime - changeActionActualTime;
     if(enemyTimeDiff >= 1 * 1000) { // Muda a cada 1 segundo
         map->ChangeEnemiesActions();
         changeActionActualTime = glutGet(GLUT_ELAPSED_TIME);
         map->RechargeEnemies();
     }
-    map->ExecuteEnemiesActions(timeDifference, player, enemyStopMoving);
 
     // Checagem de colisão
     // Colisão dos inimigos com tiros do player
@@ -315,7 +316,6 @@ void mouseClick(int button, int state, int x, int y) {
             Shot* newShot = player->Shoot();
             if(newShot) {
                 playerShots.push_back(newShot);
-
             }
         }
     }
@@ -342,7 +342,8 @@ int main(int argc, char** argv)
         return 0;
     }
     cout << "Lendo arena: " << argv[1] << endl;
-    readXMLFile(argv[1]);
+    filename = argv[1];
+    readXMLFile(filename);
 
     glutInit(&argc, argv);
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
