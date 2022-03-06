@@ -103,7 +103,7 @@ double angleYear = 0;
 double camDist=50;
 double camXYAngle=0;
 double camXZAngle=0;
-int toggleCam = 0;
+int toggleCam = 2;
 int camAngle = 60;
 int lastX = 0;
 int lastY = 0;
@@ -248,96 +248,6 @@ void DrawAxes()
     
 }
 
-void DisplayEarth (GLuint texture)
-{
-    GLfloat materialEmission[] = { 0.10, 0.10, 0.10, 1};
-    GLfloat materialColorA[] = { 0.2, 0.2, 0.2, 1};
-    GLfloat materialColorD[] = { 1.0, 1.0, 1.0, 1};
-    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1};
-    GLfloat mat_shininess[] = { 100.0 };
-    glColor3f(1,1,1);
- 
-    glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
-    glMaterialfv(GL_FRONT, GL_AMBIENT, materialColorA);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, materialColorD);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-
-    glBindTexture (GL_TEXTURE_2D, texture);
-    glBegin (GL_TRIANGLE_STRIP);
-    for ( int i = 0; i <objEarth->numVtx; i++)
-    {
-        glNormal3f(objEarth->vtx[i].nX, objEarth->vtx[i].nY, objEarth->vtx[i].nZ);
-        glTexCoord2f (objEarth->vtx[i].U, objEarth->vtx[i].V);
-        glVertex3f (objEarth->vtx[i].X, objEarth->vtx[i].Y, objEarth->vtx[i].Z);
-    }
-    glEnd();
-}
-void DisplayPlane (GLuint texture)
-{
-    GLfloat materialEmission[] = { 1.0, 1.0, 1.0, 1};
-    GLfloat materialColorA[] = { 0.2, 0.2, 0.2, 1};
-    GLfloat materialColorD[] = { 1.0, 1.0, 1.0, 1};
-    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1};
-    GLfloat mat_shininess[] = { 100.0 };
-    glColor3f(1,1,1);
-
-    glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
-    glMaterialfv(GL_FRONT, GL_AMBIENT, materialColorA);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, materialColorD);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-    
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT  );//X
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );//Y
-
-    glBindTexture (GL_TEXTURE_2D, texture);
-    double textureS = 1; // Bigger than 1, repeat
-    glBegin (GL_QUADS);
-        glNormal3f(0,1,0);
-        glTexCoord2f (0, 0);
-        glVertex3f (-1, 0, -1);
-        glNormal3f(0,1,0);
-        glTexCoord2f (0, textureS);
-        glVertex3f (-1, 0, +1);
-        glNormal3f(0,1,0);
-        glTexCoord2f (textureS, textureS);
-        glVertex3f (+1, 0, +1);
-        glNormal3f(0,1,0);
-        glTexCoord2f (textureS, 0);
-        glVertex3f (+1, 0, -1);
-    glEnd();
-
-}
-
-void DisplaySun (GLuint textureSun)
-{
-    GLfloat materialEmission[] = { 1.00, 1.00, 0.00, 1};
-    GLfloat materialColor[] = { 1.0, 1.0, 0.0, 1};
-    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1};
-    GLfloat mat_shininess[] = { 50.0 };
-    glColor3f(1,1,0);
-
-    glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
-    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, materialColor);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_LINEAR );
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_LINEAR );
-
-    glBindTexture (GL_TEXTURE_2D, textureSun);
-    glBegin (GL_TRIANGLE_STRIP);
-    for ( int i = 0; i <objSun->numVtx; i++)
-    {
-        glNormal3f(objSun->vtx[i].nX, objSun->vtx[i].nY, objSun->vtx[i].nZ);
-        glTexCoord2f (objSun->vtx[i].U, objSun->vtx[i].V);
-        glVertex3f (objSun->vtx[i].X, objSun->vtx[i].Y, objSun->vtx[i].Z);
-    }
-    glEnd();
-
-}
-
 void crossProduct(
         double uX, double uY, double uZ, 
         double vX, double vY, double vZ, 
@@ -433,6 +343,26 @@ OBJ * CreateSphere (double R, double space)
     return obj;
 }
 
+//Funcao auxiliar para normalizar um vetor a/|a|
+void normalize(float a[3])
+{
+    double norm = sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2]); 
+    a[0] /= norm;
+    a[1] /= norm;
+    a[2] /= norm;
+}
+
+void eyeCamera() {
+    GLfloat increment = player->GetTotalHeight();
+    if (player->getIsDirectionToRight() == false) {
+        increment = -increment;
+    } 
+    double dir[3] = {player->GetgX() + increment, player->GetgY(), player->GetgZ()};
+    PrintText(0.1, 0.1, "Eye Camera", 0,1,0);
+    gluLookAt(player->GetgX(), player->GetgY(), player->GetgZ(),
+    dir[0], dir[1], dir[2], 0, 1, 0);
+}
+
 void display (void) {
     glClearColor (0.2,0.2,0.2,1.0);
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -450,26 +380,31 @@ void display (void) {
         PrintOnScreen(xOff + ViewingWidth/4, cameraY + ViewingHeight/3, text);
     } else {
         if (toggleCam == 0){
-            PrintText(0.1, 0.1, "Movable Camera", 0,1,0);
-            glTranslatef(0, 0, -camDist);
-            glRotatef(camXZAngle,1,0,0);
-            glRotatef(camXYAngle,0,1,0);
-            glTranslatef(-player->GetgX(), -player->GetgY(), -player->GetgZ());
+            eyeCamera();
         } else if (toggleCam == 1){
             PrintText(0.1, 0.1, "Static Camera at a Distance", 0,1,0);
             gluLookAt(map->GetgX(),map->GetgY(),50, player->GetgX(),player->GetgY(),0, 0,1,0);
         } else if (toggleCam == 2){
-            PrintText(0.1, 0.1, "Sun Camera", 0,1,0);
-            gluLookAt(0,0,0, -sin(angleYear/180*M_PI),0,-cos(angleYear/180*M_PI), 0,1,0);
+            PrintText(0.1, 0.1, "Third Person Camera", 0,1,0);
+            glTranslatef(0, 0, -camDist);
+            glRotatef(camXZAngle,1,0,0);
+            glRotatef(camXYAngle,0,1,0);
+            glTranslatef(-player->GetgX(), -player->GetgY(), -player->GetgZ());
         }
 
-        GLfloat light_position[] = { player->GetgX(), map->GetgY() + map->GetSizeY(), 0.0, 1.0 };
+        GLfloat light_position[] = { player->GetgX() - player->GetTotalHeight(), player->GetgY() + (GLfloat)1.5 * player->GetTotalHeight(), map->GetSizeZ(), 1.0 };
 
-        cout << "Ligth position:" << light_position[0] << " , " << light_position[1]<<" , " << player->GetgY() << endl;
+        // cout << "Ligth position:" << light_position[0] << " , " << light_position[1]<<" , " << player->GetgY() << endl;
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+        glDisable (GL_LIGHTING);
+        glColor3f (0.0, 1.0, 1.0);
+        glPushMatrix();
+        glTranslatef(light_position[0], light_position[1], light_position[2]);
+        glutWireCube (0.1);
+        glEnable (GL_LIGHTING);
+        glPopMatrix();
         map->Draw();
         player->Draw();
-        DrawAxes();
 
         // for (Shot* shot : playerShots ) {
         //     shot->Draw();
@@ -479,6 +414,7 @@ void display (void) {
 
     glutSwapBuffers();
 }
+
 void init (void) {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_2D);
@@ -496,7 +432,7 @@ void changeCamera(int angle, int w, int h)
     glLoadIdentity ();
 
     gluPerspective (angle, 
-            (GLfloat)w / (GLfloat)h, 1, 150.0);
+            (GLfloat)w / (GLfloat)h, 1, map->GetSizeX());
 
     glMatrixMode (GL_MODELVIEW);
 }
@@ -578,17 +514,29 @@ void idle()
     timeDifference = currentTime - previousTime;
     //Atualiza o tempo do ultimo frame ocorrido
     previousTime = currentTime;
+
+    if (timeDifference > 16) {
+        timeDifference = 16;
+    }
     
     if (gameOver || gameWin) { return; }
 
     // <--- Movimento do Player --->
-    if(keyStatus[(int)('a')])
+    if(keyStatus[(int)('s')])
     {
-        player->MoveInX(false, timeDifference, map);
+        player->MoveInXZ(false, timeDifference, map);
+    }
+    if(keyStatus[(int)('w')])
+    {
+        player->MoveInXZ(true, timeDifference, map);
     }
     if(keyStatus[(int)('d')])
     {
-        player->MoveInX(true, timeDifference, map);
+        player->TurnRight(timeDifference);
+    }
+    if(keyStatus[(int)('a')])
+    {
+        player->TurnLeft(timeDifference);
     }
     if (cursorPressStatus == 0) {
         player->MoveInY(timeDifference, true, map);
@@ -707,14 +655,22 @@ void keyboard(unsigned char key, int x, int y)
         }
         case 's':
         case 'S':
-             if (keyStatus[(int)('a')] == 0 && player->getIsDirectionToRight()) 
+             if (keyStatus[(int)('s')] == 0 && player->getIsDirectionToRight()) 
              {player->StartMoving(false);}
-             keyStatus[(int)('a')] = 1; //Using keyStatus trick
+             keyStatus[(int)('s')] = 1; //Using keyStatus trick
              break;
         case 'w':
         case 'W':
-             if (keyStatus[(int)('d')] == 0 && !player->getIsDirectionToRight()) 
+             if (keyStatus[(int)('w')] == 0 && !player->getIsDirectionToRight()) 
              {player->StartMoving(true);}
+             keyStatus[(int)('w')] = 1; //Using keyStatus trick
+             break;
+        case 'A':
+        case 'a':
+             keyStatus[(int)('a')] = 1; //Using keyStatus trick
+             break;
+        case 'D':
+        case 'd':
              keyStatus[(int)('d')] = 1; //Using keyStatus trick
              break;
         case 'j':
@@ -735,6 +691,13 @@ void keyboard(unsigned char key, int x, int y)
     }
 }
 
+void keyUp(unsigned char key, int x, int y)
+{
+    if(gameOver || gameWin ) { return; }
+    keyStatus[(int)(key)] = 0;
+    glutPostRedisplay();
+}
+
 int main (int argc, char **argv) {
     if(argc != 2) {
         cout << "Por favor informe o nome do arquivo SVG" << endl;
@@ -746,23 +709,16 @@ int main (int argc, char **argv) {
     glutInit (&argc, argv);
 
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_DEPTH);
-
     glutInitWindowSize (500, 500);
-
     glutInitWindowPosition (100, 100);
-
-    glutCreateWindow ("A Terra e o Sol");
+    glutCreateWindow ("Trabalho 2 - Matheus Lenke e Gabriel Cipriano");
 
     init();
-
     glutDisplayFunc (idle);
-
     glutIdleFunc (display);
-
     glutReshapeFunc (reshape);
-    
     glutKeyboardFunc(keyboard);
-    
+    glutKeyboardUpFunc(keyUp);
     glutMotionFunc(mouse_motion);
     glutMouseFunc(mouse_callback);
 

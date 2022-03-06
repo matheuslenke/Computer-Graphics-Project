@@ -15,6 +15,7 @@
 // Dimensions
 #define legMovingSpeed 2.5
 #define characterAmmo 1
+#define turningSpeed 0.1
 
 struct hitBox {
     vec2 upLeft;
@@ -45,19 +46,20 @@ protected:
     GLfloat speed;
     GLdouble jumpingSpeed;
     GLfloat jumpingGround;
-    GLboolean isJumping;
-    GLboolean hasJumpedToMax;
+    bool isJumping;
+    bool hasJumpedToMax;
     GLfloat da;
     GLfloat da2;
     GLfloat groundLimit;
     vec3 bodyColor;
-    GLboolean isShooting;
+    bool isShooting;
     GLint ammo;
     GLint totalAmmo;
     vec3 shootColor;
+    GLfloat lookingAngle;
 
-    void DrawCharacter(GLfloat x, GLfloat y);
-    void DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G, GLfloat B);
+    void DrawCharacter(GLfloat x, GLfloat y, GLfloat gZ);
+    void DrawRectangle(GLfloat height, GLfloat width, GLfloat depth, GLfloat R, GLfloat G, GLfloat B);
     void DrawCircle(GLfloat radius, GLfloat R, GLfloat G, GLfloat B);
     void DrawLegs();
     void DrawArms();
@@ -68,12 +70,11 @@ protected:
     bool CollidesUpWithAPlatform(GLfloat inc, Map* map);
 
 public:
-
-    GLboolean isFacingRight;
+    bool isFacingRight;
     Character(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor, vec3 shootColor, GLint totalAmmo) {
         gX = x; 
         gY = y;
-        gZ = 1;
+        gZ = y/4;
 
         this->totalHeight = totalHeight;
         leg1Theta1 = 0;
@@ -103,12 +104,13 @@ public:
         ammo = totalAmmo;
         this->totalAmmo = totalAmmo;
         this->shootColor = shootColor;
+        lookingAngle = 0;
 
     };
     void Draw(){ 
-        DrawCharacter(gX, gY);
+        DrawCharacter(gX, gY, gZ);
     };
-    void MoveInX(bool isToRight, GLdouble timeDiff, Map* map);
+    void MoveInXZ(bool isToRight, GLdouble timeDiff, Map* map);
     void StartMoving(bool isToRight);
     bool getIsDirectionToRight();
     void MoveInY(GLdouble timeDiff, bool isPressingJumpButton, Map* map);
@@ -130,6 +132,8 @@ public:
     void RechargeShot();
     bool CollidesWithPoint(GLfloat x, GLfloat y);
     bool CollidesWithEndOfMap(Map* map);
+    void TurnRight(GLdouble timeDiff);
+    void TurnLeft(GLdouble timeDiff);
 };
 
 #endif	/* CHARACTER_H */

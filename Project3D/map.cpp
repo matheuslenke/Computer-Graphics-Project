@@ -27,15 +27,15 @@ void Map::DrawOutline() {
 
     glBegin(GL_QUADS);
         glNormal3f(0,1,0);
-        glVertex3f (0, 0, -this->sizeZ/2);
+        glVertex3f (0, 0, 0);
         glNormal3f(0,1,0);
-        glVertex3f (this->sizeX, 0, -this->sizeZ/2);
+        glVertex3f (this->sizeX, 0, 0);
         glNormal3f(0,1,0);
-        glVertex3f (this->sizeX , 0, this->sizeZ/2);
+        glVertex3f (this->sizeX , 0, this->sizeZ);
         glNormal3f(0,1,0);
-        glVertex3f (0, 0, this->sizeZ/2);
+        glVertex3f (0, 0, this->sizeZ);
         glNormal3f(0,1,0);
-        glVertex3f (0, 0, -this->sizeZ/2);
+        glVertex3f (0, 0, 0);
     glEnd();
 }
 

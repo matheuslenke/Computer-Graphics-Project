@@ -3,14 +3,17 @@
 #include <iostream>
 
 /* <-- Seção de Desenhos --> */
-void Character::DrawCharacter(GLfloat x, GLfloat y)
+void Character::DrawCharacter(GLfloat x, GLfloat y, GLfloat z)
 {
     glPushMatrix();
-
-    glTranslatef(x, y, 0);
+    glTranslatef(x, y, z);
+    glRotatef(-lookingAngle, 0, 1, 0);
     glTranslatef(0, -totalHeight * 0.1, 0);
     // Desenha o corpo do personagem
-    DrawRectangle(bodyHeight, bodyWidth, bodyColor.x, bodyColor.y, bodyColor.z);
+    glPushMatrix();
+    glTranslatef(-bodyWidth/2, bodyHeight, 0);
+    DrawRectangle(bodyHeight, bodyWidth, bodyWidth, bodyColor.x, bodyColor.y, bodyColor.z);
+    glPopMatrix();
     // Desenha a cabeça do personagem
     glPushMatrix();
     glTranslatef(0, bodyHeight + radiusHead, 0);
@@ -20,7 +23,7 @@ void Character::DrawCharacter(GLfloat x, GLfloat y)
     DrawLegs();
     // Desenha os braços do personagem
     DrawArms();
-    // DrawHitbox();
+    // DrawHitbox();4r
 
     glPopMatrix();
 }
@@ -28,77 +31,130 @@ void Character::DrawCharacter(GLfloat x, GLfloat y)
 void Character::DrawLegs() {
     // Desenhando a perna esquerda
     glPushMatrix();
-    glTranslatef(0, 0, 0);
+    glTranslatef(-legWidth/2, 0, -bodyWidth/2 + legWidth/2);
     glRotatef(this->leg1Theta1, 0, 0, 1);
-    glTranslatef(0, -legHeight, 0);
-    DrawRectangle(legHeight, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+    DrawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
 
     glRotatef(this->leg1Theta2, 0, 0, 1);
     glTranslatef(0, -legHeight, 0);
-    DrawRectangle(legHeight, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+    DrawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
     glPopMatrix();
     
     // Desenhando a perna direita
     glPushMatrix();
-    glTranslatef(0, 0, 0);
+    glTranslatef(-legWidth/2, 0, bodyWidth/2 - legWidth/2);
     glRotatef(this->leg2Theta1, 0, 0, 1);
-    glTranslatef(0, -legHeight, 0);
-    DrawRectangle(legHeight, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+    DrawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
 
     glRotatef(this->leg2Theta2, 0, 0, 1);
     glTranslatef(0, -legHeight, 0);
-    DrawRectangle(legHeight, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+    DrawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
     glPopMatrix();
 }
 
 void Character::DrawArms() {
     glPushMatrix();
-    if(this->isFacingRight) {
+    if(!this->isFacingRight) {
         glTranslatef(0, 0.3 * totalHeight, 0);
         glRotatef(-this->armTheta, 0, 0, 1);
 
-        DrawRectangle(armHeight, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+        DrawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
     } else {
         glTranslatef(0, 0.3 * totalHeight, 0);
         glRotatef(this->armTheta, 0, 0, 1);
 
-        DrawRectangle(armHeight, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+        DrawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
     }
     // cout << this->armTheta << endl;
     glPopMatrix();
 }
 
-void Character::DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G, GLfloat B) {
+void Character::DrawRectangle(GLfloat height, GLfloat width, GLfloat depth, GLfloat R, GLfloat G, GLfloat B) {
     /* Define cor dos vértices com os valores R, G e B variando de 0.0 a 1.0 */
     glColor3f (R, G, B);
 
-    glBegin(GL_POLYGON);
-        glVertex3f (0, 0, 0.0);
-        glVertex3f (width / 2 , 0, 0.0);
-        glVertex3f (width / 2 , height, 0.0);
-        glVertex3f (- width / 2, height, 0.0);
-        glVertex3f (- width / 2, 0, 0.0);
-        glVertex3f (0, 0, 0.0);
+  glBegin(GL_QUADS);
+        glNormal3f(0,1,0);
+        glVertex3f (0, 0, -depth/2);
+        glNormal3f(0,1,0);
+        glVertex3f (width, 0,-depth/2);
+        glNormal3f(0,1,0);
+        glVertex3f (width , 0, depth/2);
+        glNormal3f(0,1,0);
+        glVertex3f (0, 0, depth/2);
+        glNormal3f(0,1,0);
+        glVertex3f (0, 0, -depth/2);
+    glEnd();
+
+    // Face inferior
+    glBegin(GL_QUADS);
+        glNormal3f(0,-1,0);
+        glVertex3f (0, -height, -depth/2);
+        glNormal3f(0,-1,0);
+        glVertex3f (width, -height,-depth/2);
+        glNormal3f(0,-1,0);
+        glVertex3f (width , -height, depth/2);
+        glNormal3f(0,-1,0);
+        glVertex3f (0, -height, depth/2);
+        glNormal3f(0,-1,0);
+        glVertex3f (0, -height, -depth/2);
+    glEnd();
+
+    // Faces laterais
+    glBegin(GL_QUADS); // 1
+        glNormal3f(-1,0,0);
+        glVertex3f (0, 0, -depth/2);
+        glNormal3f(-1,0,0);
+        glVertex3f (0, -height, -depth/2);
+        glNormal3f(-1,0,0);
+        glVertex3f (0, -height, depth/2);
+        glNormal3f(-1,0,0);
+        glVertex3f (0, 0, depth/2);
+        glNormal3f(-1,0,0);
+        glVertex3f (0, 0, -depth/2);
+    glEnd();
+    glBegin(GL_QUADS); // 2
+        glNormal3f(0,0,1);
+        glVertex3f (0, 0, depth/2);
+        glNormal3f(0,0,1);
+        glVertex3f (0, -height, depth/2);
+        glNormal3f(0,0,1);
+        glVertex3f (width, -height, depth/2);
+        glNormal3f(0,0,1);
+        glVertex3f (width, 0, depth/2);
+        glNormal3f(0,0,1);
+        glVertex3f (0, 0, depth/2);
+    glEnd();
+    glBegin(GL_QUADS); // 3
+        glNormal3f(1,0,0);
+        glVertex3f (width, 0, -depth/2);
+        glNormal3f(1,0,0);
+        glVertex3f (width, -height, -depth/2);
+        glNormal3f(1,0,0);
+        glVertex3f (width, -height, depth/2);
+        glNormal3f(1,0,0);
+        glVertex3f (width, 0, depth/2);
+        glNormal3f(1,0,0);
+        glVertex3f (width, 0, -depth/2);
+    glEnd();
+    glBegin(GL_QUADS); // 4
+        glNormal3f(0,0, -1);
+        glVertex3f (0, 0, -depth/2);
+        glNormal3f(0,0, -1);
+        glVertex3f (width, 0, -depth/2);
+        glNormal3f(0,0, -1);
+        glVertex3f (width, -height, -depth/2);
+        glNormal3f(0,0, -1);
+        glVertex3f (0, -height, -depth/2);
+        glNormal3f(0,0, -1);
+        glVertex3f (0, 0, -depth/2);
     glEnd();
 }
 
 void Character::DrawCircle(GLfloat radius, GLfloat R, GLfloat G, GLfloat B)
 {
     glColor3f(R, G, B);
-    int numsegments = 25;
-
-    glBegin(GL_POLYGON);
-      for(int ii = 0; ii < numsegments; ii++)
-      {
-        float theta = 2.0f * 3.1415926f * float(ii) / float(numsegments);//get the current angle
-
-        float x = radius * cosf(theta);//calculate the x component
-        float y = radius * sinf(theta);//calculate the y component
-
-        glVertex2f(x, y);//output vertex
-      }
-
-
+    glutSolidSphere(radius, 20, 10);
     glEnd();
 }
 
@@ -126,19 +182,19 @@ void Character::DrawHitbox() {
 /* <-- Seção de Animações --> */
 void Character::StartMoving(bool isToRight) {
     if (isJumping) {
-        if (isToRight) {
-            this->isFacingRight = true;
-            this->leg1Theta1 = 40;
-            this->leg1Theta2 = -100;
-            this->leg2Theta1 = 45;
-            this->leg2Theta2 = -100;
-        } else {
-            this->isFacingRight = false;
-            this->leg1Theta1 = -40;
-            this->leg1Theta2 = 100;
-            this->leg2Theta1 = -45;
-            this->leg2Theta2 = 100;
-        }
+        // if (isToRight) {
+        //     this->isFacingRight = true;
+        //     this->leg1Theta1 = 40;
+        //     this->leg1Theta2 = -100;
+        //     this->leg2Theta1 = 45;
+        //     this->leg2Theta2 = -100;
+        // } else {
+        //     this->isFacingRight = false;
+        //     this->leg1Theta1 = -40;
+        //     this->leg1Theta2 = 100;
+        //     this->leg2Theta1 = -45;
+        //     this->leg2Theta2 = 100;
+        // }
     }
     else if (isToRight) {
         this->isFacingRight = true;
@@ -179,39 +235,42 @@ void Character::StartStanding() {
 }
 
 /* <-- Seção de Movimentos e Lógica --> */
-void Character::MoveInX(bool isToRight, GLdouble timeDiff, Map* map) {
+void Character::MoveInXZ(bool isToRight, GLdouble timeDiff, Map* map) {
 
     if (isToRight) {
-        GLfloat inc = this->speed * timeDiff;
-        if (CollidesRightWithAPlatform(inc, map) == true) {
+        this->isFacingRight = true;
+        GLfloat incx = this->speed * timeDiff * fabs(cos(this->lookingAngle * (180/M_PI)));
+        GLfloat incz = -this->speed * timeDiff * sin(this->lookingAngle * (180/M_PI));
+        if (CollidesRightWithAPlatform(incx, map) == true) {
+            // cout <<"Colidiu aqui" << endl;
             return;
         }
-        this->gX += inc;
+        cout << "Moving in x,z: " << incx << " , " << incz << endl;
+        this->gX += incx;
+        this->gZ += incz;
         if (this->isJumping) { return; }
-        leg1Theta2 = -10;
-        leg2Theta2 = -10;
-
         if(this->leg1Theta1 > 30) { da = -legMovingSpeed; }
-        if(this->leg1Theta1 < -30) { da = legMovingSpeed;}
+        if(this->leg1Theta1 < -30) { da = legMovingSpeed; }
 
         if(this->leg2Theta1 > 30) { da2 = -legMovingSpeed; }
         if(this->leg2Theta1 < -30) { da2 = legMovingSpeed; }
 
         leg1Theta1 += da;
         leg2Theta1 += da2;
+        // cout << "Rotacionando perna por: " << this->leg1Theta1 << endl;
 
     } else {
+        this->isFacingRight = false;
         GLfloat inc = this->speed * timeDiff;
         if (CollidesLeftWithAPlatform(inc, map) == true) {
+            // cout <<"Colidiu aqui" << endl;
             return;
         }
         this->gX -= inc;
         if (this->isJumping) { return; }
-        leg1Theta2 = 10;
-        leg2Theta2 = 10;
 
         if(this->leg1Theta1 > 30) { da = -legMovingSpeed; }
-        if(this->leg1Theta1 < -30) { da = legMovingSpeed;}
+        if(this->leg1Theta1 < -30) { da = legMovingSpeed; }
 
         if(this->leg2Theta1 > 30) { da2 = -legMovingSpeed; }
         if(this->leg2Theta1 < -30) { da2 = legMovingSpeed; }
@@ -284,6 +343,23 @@ void Character::MoveArmsAngle(GLfloat x, GLfloat y) {
     }
 }
 
+void Character::TurnRight(GLdouble timeDiff) {
+    if (this->lookingAngle >= 360) {
+        this->lookingAngle = 0;
+    }
+    this->lookingAngle += timeDiff * turningSpeed;
+    // cout << "Looking Angle: " << this->lookingAngle << endl;
+}
+
+void Character::TurnLeft(GLdouble timeDiff) {
+    if (this->lookingAngle <= -360) {
+        this->lookingAngle = 0;
+    }
+    this->lookingAngle -= timeDiff * turningSpeed;
+    // cout << "Looking Angle: " << this->lookingAngle << endl;
+
+}
+
 // Funcao auxiliar de rotacao para posicionar o tiro
 void RotatePointUtil(GLfloat x, GLfloat y, GLfloat height, GLfloat angle, GLfloat &xOut, GLfloat &yOut){
     yOut = y + height*sin (angle*M_PI/180);
@@ -316,19 +392,19 @@ void Character::RechargeShot() {
 }
 
 bool Character::CollidesDownWithAPlatform(GLfloat inc, Map* map) {
-    if (GetCharacterGroundY() <= this->groundLimit) {
+    if (GetCharacterGroundY() + 0.1 * this->GetTotalHeight() <= this->groundLimit) {
         return true;
     }
     if (inc == 0) { return false;}
-    if (map->ColidesWithAPlatform(this->gX - this->bodyWidth/2, this->gY - 0.5*totalHeight - inc) == true
+    if (map->ColidesWithAPlatform(this->gX - this->bodyWidth/2, this->gY - 0.6*totalHeight - inc) == true
         ||
-        map->CollidesWithEnemy(this->gX - this->bodyWidth/2, this->gY - 0.5*totalHeight - inc) == true
+        map->CollidesWithEnemy(this->gX - this->bodyWidth/2, this->gY - 0.6*totalHeight - inc) == true
         ) {
         return true;
     }
-    if (map->ColidesWithAPlatform(this->gX + this->bodyWidth/2, this->gY - 0.5*totalHeight - inc) == true
+    if (map->ColidesWithAPlatform(this->gX + this->bodyWidth/2, this->gY - 0.6*totalHeight - inc) == true
         ||
-        map->CollidesWithEnemy(this->gX + this->bodyWidth/2, this->gY - 0.5*totalHeight - inc) == true
+        map->CollidesWithEnemy(this->gX + this->bodyWidth/2, this->gY - 0.6*totalHeight - inc) == true
     ) {
         return true;
     }
