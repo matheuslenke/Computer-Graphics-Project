@@ -5,13 +5,15 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #endif
-#include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 #include <iostream>
 #include <list>
 #include <vector>
 
+#include "imageloader.h"
 #include "headers/character.h"
 #include "headers/enemy.h"
 #include "headers/platform.h"
@@ -20,6 +22,9 @@
 #include "headers/shot.h"
 #include "tinyxml2.h"
 
+
+using namespace std;
+using namespace tinyxml2;
 
 using namespace std;
 using namespace tinyxml2;
@@ -58,75 +63,53 @@ GLboolean enemyStopMoving = false;
 // Impressao na tela
 void * font = GLUT_BITMAP_9_BY_15;
 
-void moveCamera() {
-    glMatrixMode(GL_PROJECTION); // Select the projection matrix   
-    glLoadIdentity(); 
-    GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
-    glOrtho(xOff,     // X coordinate of left edge             
-            xOff + ViewingWidth,     // X coordinate of right edge            
-            cameraY,     // Y coordinate of bottom edge             
-            cameraY + ViewingHeight,     // Y coordinate of top edge             
-            -1.0,     // Z coordinate of the “near” plane            
-            1.0);    // Z coordinate of the “far” plane
-    glMatrixMode(GL_MODELVIEW); // Select the projection matrix    
-    glLoadIdentity();
-}
-
-void PrintOnScreen(GLfloat x, GLfloat y, string text)
+typedef struct
 {
-    glColor3f(1.0, 1.0, 1.0);
-    glRasterPos2f(x, y);
+    //Vertex coordinate
+    double X;
+    double Y;
+    double Z;
+    
+    //Vertex normal 
+    double nX;
+    double nY;
+    double nZ;
+    
+    //Vertex texture coordinate
+    double U;
+    double V;
+} VERTICES;
 
-    int i, len;
-    len = text.length();
-    for(i = 0; i < len ; i++) {
-        glutBitmapCharacter(font, text[i]);
-    }
-}
-
-void renderScene(void)
+typedef struct
 {
-    // Clear the screen.
-    glClear(GL_COLOR_BUFFER_BIT);
-    if(gameOver == true) {
-        string text {"Game Over! press r to restart"};
-        GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
-        PrintOnScreen(xOff + ViewingWidth/4, cameraY + ViewingHeight/2, text);
-    } else if (gameWin == true) {
-        string text {"You win! press r to restart"};
+    VERTICES * vtx;
+    int numVtx;
+    double radius;
+} OBJ;
 
-        GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
-        PrintOnScreen(xOff + ViewingWidth/3, cameraY + ViewingHeight/2, "Congratulations!");
-        PrintOnScreen(xOff + ViewingWidth/4, cameraY + ViewingHeight/3, text);
-    } else {
-        moveCamera();
-        map->Draw();
-        player->Draw();
+OBJ* objEarth;
+OBJ* objSun;
 
-        for (Shot* shot : playerShots ) {
-            shot->Draw();
-        }
-        map->DrawShots(); // Tiros dos inimigos
-    }
-    glutSwapBuffers(); // Desenha the new frame of the game.
-}
+//Identificadores de textura
+GLuint textureEarth;
+GLuint textureSun;
+GLuint texturePlane;
 
-void ResetKeyStatus()
-{
-    int i;
-    //Initialize keyStatus
-    for(i = 0; i < 256; i++)
-       keyStatus[i] = 0; 
-}
+//Cotroles de giro
+double angleDay = 0;
+double angleYear = 0;
 
-void init (void) 
-{
-    ResetKeyStatus();   
-    // The color the windows will redraw. Its done to erase the previous frame.
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black, no opacity(alpha).
+//Camera controls
+double camDist=50;
+double camXYAngle=0;
+double camXZAngle=0;
+int toggleCam = 0;
+int camAngle = 60;
+int lastX = 0;
+int lastY = 0;
+int buttonDown=0;
 
-    moveCamera(); 
-}
+GLuint LoadTextureRAW( const char * filename );
 
 void readXMLFile(string filename) {
     XMLDocument mapDocument;
@@ -146,7 +129,7 @@ void readXMLFile(string filename) {
         else if(strcmp(aux->Attribute("fill"), "green") == 0) {
             player = new Character(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(0, 1, 0), vec3(1, 1, 1), playerAmmo);
         } else if (strcmp(aux->Attribute("fill"), "black") == 0) {
-            Platform p = Platform( aux->DoubleAttribute("x"), - aux->FloatAttribute("y") + (map->GetSizeY() + 2 * map->GetgY())  , aux->DoubleAttribute("width"), aux->DoubleAttribute("height"));
+            Platform p = Platform( aux->DoubleAttribute("x"), - aux->FloatAttribute("y") + (map->GetSizeY() + 2 * map->GetgY()), aux->DoubleAttribute("width"), aux->DoubleAttribute("height"), map->GetSizeZ());
             platforms.push_back(p);
         } else if(strcmp(aux->Attribute("fill"), "red") == 0) {
             Enemy* enemy = new Enemy(aux->DoubleAttribute("cx"), - aux->FloatAttribute("cy") + (map->GetSizeY() + 2 * map->GetgY()), 2 * aux->DoubleAttribute("r")  , map->GetgY(), vec3(1, 0, 0), vec3(0.7, 0.3, 0.3), enemyAmmo);
@@ -156,7 +139,7 @@ void readXMLFile(string filename) {
                 random = rand() % 2;
                 enemy->InsertAction(random);
             }
-            enemies.push_back(enemy);
+            // enemies.push_back(enemy);
         }
     }
     for (Enemy* enemy : enemies) {
@@ -167,6 +150,54 @@ void readXMLFile(string filename) {
     }
 }
 
+void RasterChars(GLfloat x, GLfloat y, GLfloat z, const char * text, double r, double g, double b)
+{
+    //Push to recover original attributes
+    glPushAttrib(GL_ENABLE_BIT);
+        glDisable(GL_LIGHTING);
+        glDisable(GL_TEXTURE_2D);
+        //Draw text in the x, y, z position
+        glColor3f(r,g,b);
+        glRasterPos3f(x, y, z);
+        const char* tmpStr;
+        tmpStr = text;
+        while( *tmpStr ){
+            glutBitmapCharacter(GLUT_BITMAP_9_BY_15, *tmpStr);
+            tmpStr++;
+        }
+    glPopAttrib();
+}
+
+void PrintOnScreen(GLfloat x, GLfloat y, string text)
+{
+    glColor3f(1.0, 1.0, 1.0);
+    glRasterPos2f(x, y);
+
+    int i, len;
+    len = text.length();
+    for(i = 0; i < len ; i++) {
+        glutBitmapCharacter(font, text[i]);
+    }
+}
+void PrintText(GLfloat x, GLfloat y, const char * text, double r, double g, double b)
+{
+    //Draw text considering a 2D space (disable all 3d features)
+    glMatrixMode (GL_PROJECTION);
+    //Push to recover original PROJECTION MATRIX
+    glPushMatrix();
+        glLoadIdentity ();
+        glOrtho (0, 1, 0, 1, -1, 1);
+        RasterChars(x, y, 0, text, r, g, b);    
+    glPopMatrix();
+    glMatrixMode (GL_MODELVIEW);
+}
+void ResetKeyStatus()
+{
+    int i;
+    //Initialize keyStatus
+    for(i = 0; i < 256; i++)
+       keyStatus[i] = 0; 
+}
 void restartGame() {
     gameOver = false;
     gameWin = false;
@@ -178,58 +209,367 @@ void restartGame() {
     readXMLFile(filename);
 }
 
- /* Callback de tecla pressionada */
-void keyPress(unsigned char key, int x, int y)
+void DrawAxes()
 {
-    if (gameOver || gameWin) { 
-        if(key == 'R' || key == 'r') {
-            restartGame();
-        }
-        return;
-     }
-    switch (key)
+    GLfloat color_r[] = { 1.0, 0.0, 0.0, 1.0 };
+    GLfloat color_g[] = { 0.0, 1.0, 0.0, 1.0 };
+    GLfloat color_b[] = { 0.0, 0.0, 1.0, 1.0 };
+
+    glPushAttrib(GL_ENABLE_BIT);
+        glDisable(GL_LIGHTING);
+        glDisable(GL_TEXTURE_2D);
+ 
+        //x axis
+        glPushMatrix();
+            glColor3fv(color_r);
+            glScalef(5, 0.3, 0.3);
+            glTranslatef(0.5, 0, 0); // put in one end
+            glutSolidCube(1.0);
+        glPopMatrix();
+
+        //y axis
+        glPushMatrix();
+            glColor3fv(color_g);
+            glRotatef(90,0,0,1);
+            glScalef(5, 0.3, 0.3);
+            glTranslatef(0.5, 0, 0); // put in one end
+            glutSolidCube(1.0);
+        glPopMatrix();
+
+        //z axis
+        glPushMatrix();
+            glColor3fv(color_b);
+            glRotatef(-90,0,1,0);
+            glScalef(5, 0.3, 0.3);
+            glTranslatef(0.5, 0, 0); // put in one end
+            glutSolidCube(1.0);
+        glPopMatrix();
+    glPopAttrib();
+    
+}
+
+void DisplayEarth (GLuint texture)
+{
+    GLfloat materialEmission[] = { 0.10, 0.10, 0.10, 1};
+    GLfloat materialColorA[] = { 0.2, 0.2, 0.2, 1};
+    GLfloat materialColorD[] = { 1.0, 1.0, 1.0, 1};
+    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1};
+    GLfloat mat_shininess[] = { 100.0 };
+    glColor3f(1,1,1);
+ 
+    glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
+    glMaterialfv(GL_FRONT, GL_AMBIENT, materialColorA);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, materialColorD);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
+    glBindTexture (GL_TEXTURE_2D, texture);
+    glBegin (GL_TRIANGLE_STRIP);
+    for ( int i = 0; i <objEarth->numVtx; i++)
     {
-        case 'a':
-        case 'A':
-             if (keyStatus[(int)('a')] == 0 && player->getIsDirectionToRight()) 
-             {player->StartMoving(false);}
-             keyStatus[(int)('a')] = 1; //Using keyStatus trick
-             break;
-        case 'd':
-        case 'D':
-             if (keyStatus[(int)('d')] == 0 && !player->getIsDirectionToRight()) 
-             {player->StartMoving(true);}
-             keyStatus[(int)('d')] = 1; //Using keyStatus trick
-             break;
-        case 'j':
-            keyStatus[(int)('j')] = 1;
-            break;  
-        case 'k':
-            keyStatus[(int)('k')] = 1;
-            break;
-        case 'l':
-            keyStatus[(int)('l')] = 1;
-            break;
-        case 'i':
-            keyStatus[(int)('i')] = 1;
-            break;
-        case 'p':
-            enemyStopMoving = !enemyStopMoving;
-            break;
-        case 27 :
-             exit(0);
+        glNormal3f(objEarth->vtx[i].nX, objEarth->vtx[i].nY, objEarth->vtx[i].nZ);
+        glTexCoord2f (objEarth->vtx[i].U, objEarth->vtx[i].V);
+        glVertex3f (objEarth->vtx[i].X, objEarth->vtx[i].Y, objEarth->vtx[i].Z);
     }
-    glutPostRedisplay();
+    glEnd();
 }
-
-void keyUp(unsigned char key, int x, int y)
+void DisplayPlane (GLuint texture)
 {
-    if(gameOver || gameWin ) { return; }
-    keyStatus[(int)(key)] = 0;
-    glutPostRedisplay();
+    GLfloat materialEmission[] = { 1.0, 1.0, 1.0, 1};
+    GLfloat materialColorA[] = { 0.2, 0.2, 0.2, 1};
+    GLfloat materialColorD[] = { 1.0, 1.0, 1.0, 1};
+    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1};
+    GLfloat mat_shininess[] = { 100.0 };
+    glColor3f(1,1,1);
+
+    glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
+    glMaterialfv(GL_FRONT, GL_AMBIENT, materialColorA);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, materialColorD);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT  );//X
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );//Y
+
+    glBindTexture (GL_TEXTURE_2D, texture);
+    double textureS = 1; // Bigger than 1, repeat
+    glBegin (GL_QUADS);
+        glNormal3f(0,1,0);
+        glTexCoord2f (0, 0);
+        glVertex3f (-1, 0, -1);
+        glNormal3f(0,1,0);
+        glTexCoord2f (0, textureS);
+        glVertex3f (-1, 0, +1);
+        glNormal3f(0,1,0);
+        glTexCoord2f (textureS, textureS);
+        glVertex3f (+1, 0, +1);
+        glNormal3f(0,1,0);
+        glTexCoord2f (textureS, 0);
+        glVertex3f (+1, 0, -1);
+    glEnd();
+
 }
 
-void idle (void) {
+void DisplaySun (GLuint textureSun)
+{
+    GLfloat materialEmission[] = { 1.00, 1.00, 0.00, 1};
+    GLfloat materialColor[] = { 1.0, 1.0, 0.0, 1};
+    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1};
+    GLfloat mat_shininess[] = { 50.0 };
+    glColor3f(1,1,0);
+
+    glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, materialColor);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_LINEAR );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_LINEAR );
+
+    glBindTexture (GL_TEXTURE_2D, textureSun);
+    glBegin (GL_TRIANGLE_STRIP);
+    for ( int i = 0; i <objSun->numVtx; i++)
+    {
+        glNormal3f(objSun->vtx[i].nX, objSun->vtx[i].nY, objSun->vtx[i].nZ);
+        glTexCoord2f (objSun->vtx[i].U, objSun->vtx[i].V);
+        glVertex3f (objSun->vtx[i].X, objSun->vtx[i].Y, objSun->vtx[i].Z);
+    }
+    glEnd();
+
+}
+
+void crossProduct(
+        double uX, double uY, double uZ, 
+        double vX, double vY, double vZ, 
+        double &oX, double &oY, double &oZ)
+{
+    oX = uY*vZ - uZ*vY;
+    oY = uZ*vX - uX*vZ;
+    oZ = uX*vY - uY*vX;
+    double norm = sqrt(oX*oX+oY*oY+oZ*oZ);
+    oX /= norm;
+    oY /= norm;
+    oZ /= norm;
+}
+
+OBJ * CreateSphere (double R, double space) 
+{
+    OBJ *obj = new OBJ;
+    
+    obj->numVtx = (180 / space) * 
+                  (2 + 360 / (2*space)) * 4;
+    obj->vtx = new VERTICES[ obj->numVtx ];
+    obj->radius = R;
+
+    int n;
+    double vR, lVR;
+    double hR, lHR;
+    double norm;
+    n = 0;
+    for( vR = 0; vR <= 180-space; vR+=space){
+        for(hR = 0; hR <= 360+2*space; hR+=2*space)
+        {
+            lVR = vR;
+            lHR = hR;
+            obj->vtx[n].X = R * 
+                    sin(lHR / 180 * M_PI) * 
+                    sin(lVR / 180 * M_PI);
+            obj->vtx[n].Y = R * 
+                    cos(lHR / 180 * M_PI) * 
+                    sin(lVR / 180 * M_PI);
+            obj->vtx[n].Z = R * 
+                    cos(lVR / 180 * M_PI);
+            obj->vtx[n].V = lVR / 180;
+            obj->vtx[n].U = lHR / 360;
+            norm = sqrt(
+                    obj->vtx[n].X*obj->vtx[n].X+
+                    obj->vtx[n].Y*obj->vtx[n].Y+
+                    obj->vtx[n].Z*obj->vtx[n].Z);
+            obj->vtx[n].nX = obj->vtx[n].X/norm;
+            obj->vtx[n].nY = obj->vtx[n].Y/norm;
+            obj->vtx[n].nZ = obj->vtx[n].Z/norm;
+            n++;
+
+            lVR = vR + space;
+            lHR = hR;
+            obj->vtx[n].X = R * sin(lHR / 180 * M_PI) * sin(lVR / 180 * M_PI);
+            obj->vtx[n].Y = R * cos(lHR / 180 * M_PI) * sin(lVR / 180 * M_PI);
+            obj->vtx[n].Z = R * cos(lVR / 180 * M_PI);
+            obj->vtx[n].V = lVR / 180;
+            obj->vtx[n].U = lHR / 360;
+            norm = sqrt(obj->vtx[n].X*obj->vtx[n].X+obj->vtx[n].Y*obj->vtx[n].Y+obj->vtx[n].Z*obj->vtx[n].Z);
+            obj->vtx[n].nX = obj->vtx[n].X/norm;
+            obj->vtx[n].nY = obj->vtx[n].Y/norm;
+            obj->vtx[n].nZ = obj->vtx[n].Z/norm;
+            n++;
+
+            lVR = vR;
+            lHR = hR + space;
+            obj->vtx[n].X = R * sin(lHR / 180 * M_PI) * sin(lVR / 180 * M_PI);
+            obj->vtx[n].Y = R * cos(lHR / 180 * M_PI) * sin(lVR / 180 * M_PI);
+            obj->vtx[n].Z = R * cos(lVR / 180 * M_PI);
+            obj->vtx[n].V = lVR / 180;
+            obj->vtx[n].U = lHR / 360;
+            norm = sqrt(obj->vtx[n].X*obj->vtx[n].X+obj->vtx[n].Y*obj->vtx[n].Y+obj->vtx[n].Z*obj->vtx[n].Z);
+            obj->vtx[n].nX = obj->vtx[n].X/norm;
+            obj->vtx[n].nY = obj->vtx[n].Y/norm;
+            obj->vtx[n].nZ = obj->vtx[n].Z/norm;
+            n++;
+
+            lVR = vR + space;
+            lHR = hR + space;
+            obj->vtx[n].X = R * sin(lHR / 180 * M_PI) * sin(lVR / 180 * M_PI);
+            obj->vtx[n].Y = R * cos(lHR / 180 * M_PI) * sin(lVR / 180 * M_PI);
+            obj->vtx[n].Z = R * cos(lVR / 180 * M_PI);
+            obj->vtx[n].V = lVR / 180;
+            obj->vtx[n].U = lHR / 360;
+            norm = sqrt(obj->vtx[n].X*obj->vtx[n].X+obj->vtx[n].Y*obj->vtx[n].Y+obj->vtx[n].Z*obj->vtx[n].Z);
+            obj->vtx[n].nX = obj->vtx[n].X/norm;
+            obj->vtx[n].nY = obj->vtx[n].Y/norm;
+            obj->vtx[n].nZ = obj->vtx[n].Z/norm;
+            n++;
+        }
+    }
+    return obj;
+}
+
+void display (void) {
+    glClearColor (0.2,0.2,0.2,1.0);
+    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+
+        if(gameOver == true) {
+        string text {"Game Over! press r to restart"};
+        GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
+        PrintOnScreen(xOff + ViewingWidth/4, cameraY + ViewingHeight/2, text);
+    } else if (gameWin == true) {
+        string text {"You win! press r to restart"};
+
+        GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
+        PrintOnScreen(xOff + ViewingWidth/3, cameraY + ViewingHeight/2, "Congratulations!");
+        PrintOnScreen(xOff + ViewingWidth/4, cameraY + ViewingHeight/3, text);
+    } else {
+        if (toggleCam == 0){
+            PrintText(0.1, 0.1, "Movable Camera", 0,1,0);
+            glTranslatef(0, 0, -camDist);
+            glRotatef(camXZAngle,1,0,0);
+            glRotatef(camXYAngle,0,1,0);
+            glTranslatef(-player->GetgX(), -player->GetgY(), -player->GetgZ());
+        } else if (toggleCam == 1){
+            PrintText(0.1, 0.1, "Static Camera at a Distance", 0,1,0);
+            gluLookAt(map->GetgX(),map->GetgY(),50, player->GetgX(),player->GetgY(),0, 0,1,0);
+        } else if (toggleCam == 2){
+            PrintText(0.1, 0.1, "Sun Camera", 0,1,0);
+            gluLookAt(0,0,0, -sin(angleYear/180*M_PI),0,-cos(angleYear/180*M_PI), 0,1,0);
+        }
+
+        GLfloat light_position[] = { player->GetgX(), map->GetgY() + map->GetSizeY(), 0.0, 1.0 };
+
+        cout << "Ligth position:" << light_position[0] << " , " << light_position[1]<<" , " << player->GetgY() << endl;
+        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+        map->Draw();
+        player->Draw();
+        DrawAxes();
+
+        // for (Shot* shot : playerShots ) {
+        //     shot->Draw();
+        // }
+        // map->DrawShots(); // Tiros dos inimigos
+    }
+
+    glutSwapBuffers();
+}
+void init (void) {
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_LIGHTING);
+    glShadeModel (GL_SMOOTH);
+
+    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_LIGHT0);
+}
+
+void changeCamera(int angle, int w, int h)
+{
+    glMatrixMode (GL_PROJECTION);
+
+    glLoadIdentity ();
+
+    gluPerspective (angle, 
+            (GLfloat)w / (GLfloat)h, 1, 150.0);
+
+    glMatrixMode (GL_MODELVIEW);
+}
+
+void reshape (int w, int h) {
+
+    glViewport (0, 0, (GLsizei)w, (GLsizei)h);
+
+    changeCamera(camAngle, w, h);
+}
+
+void mouse_callback(int button, int state, int x, int y) 
+{
+    if(gameOver || gameWin) { return; }
+    if(button == GLUT_LEFT_BUTTON) {
+        cursorPressStatus = state;
+        if(!player->getIsJumping()) {
+            player->StartJumping();
+        }
+    } else if(button == GLUT_RIGHT_BUTTON) {
+        if(state == 1) {
+            Shot* newShot = player->Shoot();
+            if(newShot) {
+                playerShots.push_back(newShot);
+            }
+        }
+    }
+    if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+        lastX = x;
+        lastY = y;
+        buttonDown = 1;
+    } 
+    if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP) {
+        buttonDown = 0;
+    }
+}
+
+void mouse_motion(int x, int y)
+{
+    if (!buttonDown)
+        return;
+    
+    camXYAngle += x - lastX;
+    camXZAngle += y - lastY;
+    
+    camXYAngle = (int)camXYAngle % 360;
+    camXZAngle = (int)camXZAngle % 360;
+    
+    lastX = x;
+    lastY = y;
+
+    if(gameOver || gameWin) { return; }
+    y = (Height - y);
+    GLfloat normalizedY = (float)y /(float) Height;
+    GLfloat normalizedX = (float)x /(float) Width;
+    // Transformações para o x e y do mouse coincidirem com o do mapa
+    GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
+    GLfloat transformedX = (player->GetgX() - ViewingWidth/2 ) + ViewingWidth * normalizedX;
+    GLfloat transformedY = ( ViewingHeight * normalizedY) + cameraY;
+    player->MoveArmsAngle(transformedX, transformedY);
+}
+
+void idle()
+{
+    angleDay+=0.05;
+    angleYear+=0.01;
+    
+    if (angleDay > 360) angleDay = 0;
+    else if (angleDay < 0) angleDay = 360;
+
+    if (angleYear > 360) angleYear = 0;
+    else if (angleYear < 0) angleYear = 360;
+
     GLdouble currentTime, timeDifference;
     static GLdouble previousTime =  glutGet(GLUT_ELAPSED_TIME);
     //Pega o tempo que passou do inicio da aplicacao
@@ -301,42 +641,101 @@ void idle (void) {
         return;
     }
 
-   glutPostRedisplay();
-}
-
-void mouseClick(int button, int state, int x, int y) {
-    if(gameOver || gameWin) { return; }
-    if(button == 0) {
-        cursorPressStatus = state;
-        if(!player->getIsJumping()) {
-            player->StartJumping();
-        }
-    } else if(button == 2) {
-        if(state == 1) {
-            Shot* newShot = player->Shoot();
-            if(newShot) {
-                playerShots.push_back(newShot);
-            }
-        }
-    }
-}
-
-void mouseMove(int x, int y) {
-    if(gameOver || gameWin) { return; }
-    y = (Height - y);
-    GLfloat normalizedY = (float)y /(float) Height;
-    GLfloat normalizedX = (float)x /(float) Width;
-    // Transformações para o x e y do mouse coincidirem com o do mapa
-    GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
-    GLfloat transformedX = (player->GetgX() - ViewingWidth/2 ) + ViewingWidth * normalizedX;
-    GLfloat transformedY = ( ViewingHeight * normalizedY) + cameraY;
-    player->MoveArmsAngle(transformedX, transformedY);
-
     glutPostRedisplay();
 }
 
-int main(int argc, char** argv)
+void keyboard(unsigned char key, int x, int y)
 {
+    if (gameOver || gameWin) { 
+        if(key == 'R' || key == 'r') {
+            restartGame();
+        }
+        return;
+     }
+    static bool textureEnebled = true;
+    static bool lightingEnebled = true;
+    static bool smoothEnebled = true;
+    switch (key) {
+        case '1':
+            toggleCam = 0;
+            break;
+        case '2':
+            toggleCam = 1;
+            break;
+        case '3':
+            toggleCam = 2;
+            break;
+        case '7':
+            if ( textureEnebled ){
+                glDisable( GL_TEXTURE_2D );
+            }else{
+                glEnable( GL_TEXTURE_2D );
+            }
+            textureEnebled = !textureEnebled; 
+            break;
+        case '8':
+            if ( lightingEnebled ){
+                glDisable( GL_LIGHTING );
+            }else{
+                glEnable( GL_LIGHTING );
+            }
+            lightingEnebled = !lightingEnebled; 
+            break;
+        case '9':
+            if ( smoothEnebled ){
+                glShadeModel (GL_FLAT);
+            }else{
+                glShadeModel (GL_SMOOTH);
+            }
+            smoothEnebled = !smoothEnebled; 
+            break;
+        case '+':
+        {
+            int inc = camAngle >= 180 ? 0 : 1;
+            camAngle += inc;
+            changeCamera(camAngle, 
+                    glutGet(GLUT_WINDOW_WIDTH), 
+                    glutGet(GLUT_WINDOW_HEIGHT));
+            break;
+        }
+        case '-':
+        {
+            int inc = camAngle <= 5 ? 0 : 1;
+            camAngle -= inc;
+            changeCamera(camAngle, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
+            break;
+        }
+        case 's':
+        case 'S':
+             if (keyStatus[(int)('a')] == 0 && player->getIsDirectionToRight()) 
+             {player->StartMoving(false);}
+             keyStatus[(int)('a')] = 1; //Using keyStatus trick
+             break;
+        case 'w':
+        case 'W':
+             if (keyStatus[(int)('d')] == 0 && !player->getIsDirectionToRight()) 
+             {player->StartMoving(true);}
+             keyStatus[(int)('d')] = 1; //Using keyStatus trick
+             break;
+        case 'j':
+            keyStatus[(int)('j')] = 1;
+            break;  
+        case 'k':
+            keyStatus[(int)('k')] = 1;
+            break;
+        // case 'l':
+        //     keyStatus[(int)('l')] = 1;
+        //     break;
+        case 'i':
+            keyStatus[(int)('i')] = 1;
+            break;
+        case 27:
+            exit(0);
+            break;
+    }
+}
+
+int main (int argc, char **argv) {
     if(argc != 2) {
         cout << "Por favor informe o nome do arquivo SVG" << endl;
         return 0;
@@ -344,27 +743,58 @@ int main(int argc, char** argv)
     cout << "Lendo arena: " << argv[1] << endl;
     filename = argv[1];
     readXMLFile(filename);
+    glutInit (&argc, argv);
 
-    glutInit(&argc, argv);
-    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
+    glutInitDisplayMode (GLUT_DOUBLE | GLUT_DEPTH);
 
-    // Create the Window
-    glutInitWindowSize(Width, Height);
-    glutInitWindowPosition (150, 50);
-    glutCreateWindow ("Trabalho 1 - Matheus Lenke");
-    glutDisplayFunc(renderScene); 
+    glutInitWindowSize (500, 500);
 
-    // Registrar Funções
-    glutKeyboardFunc(keyPress);
-    glutKeyboardUpFunc(keyUp);
-    glutIdleFunc(idle);
-    glutMouseFunc(mouseClick);
-    glutPassiveMotionFunc(mouseMove);
-    glutMotionFunc(mouseMove);
+    glutInitWindowPosition (100, 100);
+
+    glutCreateWindow ("A Terra e o Sol");
 
     init();
 
-    glutMainLoop();
+    glutDisplayFunc (idle);
 
-   return 0;
+    glutIdleFunc (display);
+
+    glutReshapeFunc (reshape);
+    
+    glutKeyboardFunc(keyboard);
+    
+    glutMotionFunc(mouse_motion);
+    glutMouseFunc(mouse_callback);
+
+    glutMainLoop ();
+
+    return 0;
 }
+
+GLuint LoadTextureRAW( const char * filename )
+{
+
+    GLuint texture;
+    
+    Image* image = loadBMP(filename);
+
+    glGenTextures( 1, &texture );
+    glBindTexture( GL_TEXTURE_2D, texture );
+    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,GL_MODULATE );
+//    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,GL_REPLACE );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_LINEAR );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_LINEAR );
+    glTexImage2D(GL_TEXTURE_2D,                //Always GL_TEXTURE_2D
+                             0,                            //0 for now
+                             GL_RGB,                       //Format OpenGL uses for image
+                             image->width, image->height,  //Width and height
+                             0,                            //The border of the image
+                             GL_RGB, //GL_RGB, because pixels are stored in RGB format
+                             GL_UNSIGNED_BYTE, //GL_UNSIGNED_BYTE, because pixels are stored
+                                               //as unsigned numbers
+                             image->pixels);               //The actual pixel data
+    delete image;
+
+    return texture;
+}
+

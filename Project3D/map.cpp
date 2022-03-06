@@ -5,7 +5,7 @@
 
 using namespace std;
 
-void Map::DrawMap(GLfloat x, GLfloat y)
+void Map::DrawMap(GLfloat x, GLfloat y, GLfloat z)
 {
     glPushMatrix();
     glTranslatef(x, y, 0);
@@ -25,12 +25,17 @@ void Map::DrawMap(GLfloat x, GLfloat y)
 void Map::DrawOutline() {
     glColor3f (0.1, 0.1, 0.7);
 
-    glBegin(GL_POLYGON);
-        glVertex3f (0, 0, 0.0);
-        glVertex3f (this->sizeX, 0, 0.0);
-        glVertex3f (this->sizeX , this->sizeY, 0.0);
-        glVertex3f (0, this->sizeY, 0.0);
-        glVertex3f (0, 0, 0.0);
+    glBegin(GL_QUADS);
+        glNormal3f(0,1,0);
+        glVertex3f (0, 0, -this->sizeZ/2);
+        glNormal3f(0,1,0);
+        glVertex3f (this->sizeX, 0, -this->sizeZ/2);
+        glNormal3f(0,1,0);
+        glVertex3f (this->sizeX , 0, this->sizeZ/2);
+        glNormal3f(0,1,0);
+        glVertex3f (0, 0, this->sizeZ/2);
+        glNormal3f(0,1,0);
+        glVertex3f (0, 0, -this->sizeZ/2);
     glEnd();
 }
 

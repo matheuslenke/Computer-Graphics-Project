@@ -28,6 +28,7 @@ class Character {
 protected:
     GLfloat gX; 
     GLfloat gY;
+    GLfloat gZ;
     GLfloat totalHeight;
     GLfloat legHeight;
     GLfloat legWidth;
@@ -72,6 +73,7 @@ public:
     Character(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor, vec3 shootColor, GLint totalAmmo) {
         gX = x; 
         gY = y;
+        gZ = 1;
 
         this->totalHeight = totalHeight;
         leg1Theta1 = 0;
@@ -116,6 +118,9 @@ public:
     vec3 getPosition();
     GLfloat GetgX();
     GLfloat GetgY();
+    GLfloat GetgZ() {
+        return this->gZ;
+    }
     GLfloat GetCharacterGroundY();
     GLfloat GetCharacterHighestY();
     GLfloat GetBodyWidth();

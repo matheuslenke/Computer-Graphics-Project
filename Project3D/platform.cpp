@@ -4,29 +4,98 @@
 
 using namespace std;
 
-void Platform::DrawPlatform(GLfloat x, GLfloat y)
+void Platform::DrawPlatform(GLfloat x, GLfloat y, GLfloat z)
 {
     glPushMatrix();
 
-    glTranslatef(x, y, 0);
+    glTranslatef(x, y, z);
 
     // Desenha a plataforma
-    DrawRectangle(this->sizeY, this->sizeX, 0, 0, 0);
+    DrawRectangle(this->sizeY, this->sizeX, this->sizeZ, 0, 0, 0);
 
     glPopMatrix();
 }
 
 
-void Platform::DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G, GLfloat B)
+void Platform::DrawRectangle(GLfloat height, GLfloat width, GLfloat depth, GLfloat R, GLfloat G, GLfloat B)
 {
     glColor3f (R, G, B);
+    // Face Superior
+    glBegin(GL_QUADS);
+        glNormal3f(0,1,0);
+        glVertex3f (0, 0, -depth/2);
+        glNormal3f(0,1,0);
+        glVertex3f (width, 0,-depth/2);
+        glNormal3f(0,1,0);
+        glVertex3f (width , 0, depth/2);
+        glNormal3f(0,1,0);
+        glVertex3f (0, 0, depth/2);
+        glNormal3f(0,1,0);
+        glVertex3f (0, 0, -depth/2);
+    glEnd();
 
-    glBegin(GL_POLYGON);
-        glVertex3f (0, 0, 0.0);
-        glVertex3f (width, 0, 0.0);
-        glVertex3f (width , -height, 0.0);
-        glVertex3f (0, -height, 0.0);
-        glVertex3f (0, 0, 0.0);
+    // Face inferior
+    glBegin(GL_QUADS);
+        glNormal3f(0,-1,0);
+        glVertex3f (0, -height, -depth/2);
+        glNormal3f(0,-1,0);
+        glVertex3f (width, -height,-depth/2);
+        glNormal3f(0,-1,0);
+        glVertex3f (width , -height, depth/2);
+        glNormal3f(0,-1,0);
+        glVertex3f (0, -height, depth/2);
+        glNormal3f(0,-1,0);
+        glVertex3f (0, -height, -depth/2);
+    glEnd();
+
+    // Faces laterais
+    glBegin(GL_QUADS);
+        glNormal3f(1,0,0);
+        glVertex3f (0, 0, -depth/2);
+        glNormal3f(1,0,0);
+        glVertex3f (0, -height, -depth/2);
+        glNormal3f(1,0,0);
+        glVertex3f (0, -height, depth/2);
+        glNormal3f(1,0,0);
+        glVertex3f (0, 0, depth/2);
+        glNormal3f(1,0,0);
+        glVertex3f (0, 0, -depth/2);
+    glEnd();
+    glBegin(GL_QUADS);
+        glNormal3f(0,0, -1);
+        glVertex3f (0, 0, -depth/2);
+        glNormal3f(0,0, -1);
+        glVertex3f (width, 0, -depth/2);
+        glNormal3f(0,0, -1);
+        glVertex3f (width, -height, -depth/2);
+        glNormal3f(0,0, -1);
+        glVertex3f (0, -height, -depth/2);
+        glNormal3f(0,0, -1);
+        glVertex3f (0, 0, -depth/2);
+    glEnd();
+    glBegin(GL_QUADS);
+        glNormal3f(0,1,0);
+        glVertex3f (width, 0, -depth/2);
+        glNormal3f(0,1,0);
+        glVertex3f (width, -height, -depth/2);
+        glNormal3f(0,1,0);
+        glVertex3f (width, -height, depth/2);
+        glNormal3f(0,1,0);
+        glVertex3f (width, 0, depth/2);
+        glNormal3f(0,1,0);
+        glVertex3f (width, 0, -depth/2);
+    glEnd();
+    glBegin(GL_QUADS);
+        glNormal3f(0,0,1);
+        glVertex3f (0, 0, depth/2);
+        glNormal3f(0,0,1);
+        glVertex3f (0, -height, depth/2);
+        glNormal3f(0,0,1);
+        glVertex3f (width, -height, depth/2);
+        glNormal3f(0,0,1);
+        glVertex3f (width, 0, depth/2);
+        glNormal3f(0,0,1);
+        glVertex3f (0, 0, depth/2);
     glEnd();
 }
 

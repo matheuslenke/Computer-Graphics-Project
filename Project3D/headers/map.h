@@ -21,14 +21,16 @@ class Shot;
 class Map {
     GLfloat gX; 
     GLfloat gY;
+    GLfloat gZ;
     GLfloat sizeX;
     GLfloat sizeY;
+    GLfloat sizeZ;
     vector<Platform> platforms;
     vector<Enemy*> enemies;
     vector <Shot*> enemyShots;
     int gColor;
 
-    void DrawMap(GLfloat x, GLfloat y);
+    void DrawMap(GLfloat x, GLfloat y, GLfloat z);
     void DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G, GLfloat B);
     void DrawPlatforms();
     void DrawEnemies();
@@ -37,12 +39,14 @@ public:
     Map(GLfloat x, GLfloat y, GLfloat sizeX, GLfloat sizeY){
         gX = x; 
         gY = y;
+        gZ = 0;
         this->sizeX = sizeX;
         this->sizeY = sizeY;
+        this->sizeZ = sizeY/2;
     };
     ~Map();
     void Draw(){ 
-        DrawMap(gX, gY);
+        DrawMap(gX, gY, gZ);
     };
     void CreateMapFromSVG();
     bool ColidesWithAPlatform(GLfloat x, GLfloat y);
@@ -52,6 +56,9 @@ public:
     GLfloat GetgY();
     GLfloat GetSizeX();
     GLfloat GetSizeY();
+    GLfloat GetSizeZ() {
+        return this->sizeZ;
+    }
     void AddEnemy(Enemy* e);
     void ExecuteEnemiesActions(GLdouble timeDifference, Character* player, GLboolean stopMoving);
     void ChangeEnemiesActions();
