@@ -6,5 +6,13 @@
         "deque": "cpp",
         "string": "cpp",
         "vector": "cpp"
+    },
+    "cmake.additionalKits": [
+        "${workspaceFolder}/arenas/arena_teste.svg"
+    ],
+    "cmake.debugConfig": {
+        "args": [
+            "./arenas/arena_teste.svg"
+        ]
     }
 }
