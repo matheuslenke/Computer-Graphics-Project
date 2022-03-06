@@ -354,12 +354,12 @@ void normalize(float a[3])
 
 void eyeCamera() {
     GLfloat increment = player->GetTotalHeight();
-    if (player->getIsDirectionToRight() == false) {
-        increment = -increment;
-    } 
-    double dir[3] = {player->GetgX() + increment, player->GetgY(), player->GetgZ()};
+    // if (player->getIsDirectionToRight() == false) {
+    //     increment = -increment;
+    // } 
+    double dir[3] = {player->GetgX() + increment, player->GetgY() + player->GetTotalHeight() * 0.45, player->GetgZ()};
     PrintText(0.1, 0.1, "Eye Camera", 0,1,0);
-    gluLookAt(player->GetgX(), player->GetgY(), player->GetgZ(),
+    gluLookAt(player->GetgX() + player->GetBodyWidth(), player->GetgY() + player->GetTotalHeight() * 0.45, player->GetgZ(),
     dir[0], dir[1], dir[2], 0, 1, 0);
 }
 

@@ -75,6 +75,10 @@ bool Map::ColidesWithAPlatform(GLfloat x, GLfloat y) {
     if (y <= this->gY || y >= (this->gY + this->sizeY)) {
         return true;
     }
+    // Colisão com os limites em Z do mapa
+    // if (z <= this->gZ || z >= (this->gZ + this->sizeZ)) {
+    //     return true;
+    // }
     // Colisão com alguma plataforma
     for (Platform platform : this->platforms) {
         collides = platform.isColiding(x, y);

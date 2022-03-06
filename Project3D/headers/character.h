@@ -126,6 +126,7 @@ public:
     GLfloat GetCharacterGroundY();
     GLfloat GetCharacterHighestY();
     GLfloat GetBodyWidth();
+    GLfloat GetBodyHeight();
     GLfloat GetTotalHeight();
     void MoveArmsAngle(GLfloat x, GLfloat y);
     Shot* Shoot();
