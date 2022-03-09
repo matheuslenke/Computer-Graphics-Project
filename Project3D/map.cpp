@@ -65,7 +65,7 @@ void Map::DrawShots() {
     }
 }
 
-bool Map::ColidesWithAPlatform(GLfloat x, GLfloat y) {
+bool Map::ColidesWithAPlatform(GLfloat x, GLfloat y, GLfloat z) {
     bool collides = false;
     // Colisão com os limites horizontais do mapa
     if(x <= this->gX || x >= (this->gX + this->sizeX)) {
@@ -76,9 +76,9 @@ bool Map::ColidesWithAPlatform(GLfloat x, GLfloat y) {
         return true;
     }
     // Colisão com os limites em Z do mapa
-    // if (z <= this->gZ || z >= (this->gZ + this->sizeZ)) {
-    //     return true;
-    // }
+    if (z <= this->gZ || z >= (this->gZ + this->sizeZ)) {
+        return true;
+    }
     // Colisão com alguma plataforma
     for (Platform platform : this->platforms) {
         collides = platform.isColiding(x, y);

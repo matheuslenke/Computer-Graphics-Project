@@ -49,7 +49,7 @@ public:
         DrawMap(gX, gY, gZ);
     };
     void CreateMapFromSVG();
-    bool ColidesWithAPlatform(GLfloat x, GLfloat y);
+    bool ColidesWithAPlatform(GLfloat x, GLfloat y, GLfloat z);
     vec2* GetPlatformLimitsAtPoint(GLfloat x, GLfloat y);
     void AddPlatform(Platform p);
     GLfloat GetgX();

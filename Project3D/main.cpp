@@ -26,8 +26,7 @@
 using namespace std;
 using namespace tinyxml2;
 
-using namespace std;
-using namespace tinyxml2;
+#define SPACEBAR 32
 
 // Window dimensions
 const GLint Width = 500;
@@ -448,11 +447,9 @@ void mouse_callback(int button, int state, int x, int y)
 {
     if(gameOver || gameWin) { return; }
     if(button == GLUT_LEFT_BUTTON) {
-        cursorPressStatus = state;
-        if(!player->getIsJumping()) {
-            player->StartJumping();
-        }
-    } else if(button == GLUT_RIGHT_BUTTON) {
+
+    } 
+    if(button == GLUT_RIGHT_BUTTON) {
         if(state == 1) {
             Shot* newShot = player->Shoot();
             if(newShot) {
@@ -538,7 +535,7 @@ void idle()
     {
         player->TurnLeft(timeDifference);
     }
-    if (cursorPressStatus == 0) {
+    if (keyStatus[SPACEBAR]) {
         player->MoveInY(timeDifference, true, map);
     } else {
         player->MoveInY(timeDifference, false, map);
@@ -684,6 +681,12 @@ void keyboard(unsigned char key, int x, int y)
         //     break;
         case 'i':
             keyStatus[(int)('i')] = 1;
+            break;
+        case SPACEBAR:
+            keyStatus[SPACEBAR] = 1;
+            if(!player->getIsJumping()) {
+                player->StartJumping();
+            }
             break;
         case 27:
             exit(0);

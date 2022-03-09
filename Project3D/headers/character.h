@@ -57,6 +57,7 @@ protected:
     GLint totalAmmo;
     vec3 shootColor;
     GLfloat lookingAngle;
+    vec3 directionVector;
 
     void DrawCharacter(GLfloat x, GLfloat y, GLfloat gZ);
     void DrawRectangle(GLfloat height, GLfloat width, GLfloat depth, GLfloat R, GLfloat G, GLfloat B);
@@ -64,6 +65,7 @@ protected:
     void DrawLegs();
     void DrawArms();
     void DrawHitbox();
+    void DrawAxes();
     bool CollidesLeftWithAPlatform(GLfloat inc, Map* map);
     bool CollidesRightWithAPlatform(GLfloat inc, Map* map);
     bool CollidesDownWithAPlatform(GLfloat inc, Map* map);
@@ -92,7 +94,7 @@ public:
 
         speed = totalHeight * 0.0028;
         this->jumpingSpeed = speed * 2;
-        isJumping = true;
+        isJumping = false;
         hasJumpedToMax = false;
         da = legMovingSpeed;
         da2 = -legMovingSpeed;
@@ -105,6 +107,9 @@ public:
         this->totalAmmo = totalAmmo;
         this->shootColor = shootColor;
         lookingAngle = 0;
+        directionVector = {0.0, 0.0, 0.0};
+        this->directionVector.x = cos((this->lookingAngle) * M_PI/180);
+        this->directionVector.z = sin(this->lookingAngle * M_PI/180);
 
     };
     void Draw(){ 

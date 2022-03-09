@@ -46,7 +46,7 @@ bool Shot::Valid(Map* map)
         float theta = 2.0f * 3.1415926f * float(j) / float(numSegments);//get the current angle
         float x = this->shotRadius * cosf(theta);//calculate the x component
         float y = this->shotRadius * sinf(theta);//calculate the y component
-        if(map->ColidesWithAPlatform(this->gX + x, this->gY + y) == true) {
+        if(map->ColidesWithAPlatform(this->gX + x, this->gY + y, 0) == true) {
             isValid = false;
             break;
         }
