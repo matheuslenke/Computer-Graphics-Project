@@ -27,53 +27,53 @@ struct hitBox {
 
 class Character {
 protected:
-    GLfloat gX; 
-    GLfloat gY;
-    GLfloat gZ;
-    GLfloat totalHeight;
-    GLfloat legHeight;
-    GLfloat legWidth;
-    GLfloat bodyHeight;
-    GLfloat bodyWidth;
-    GLfloat radiusHead;
-    GLfloat armHeight ;
-    GLfloat armWidth;
-    GLfloat leg1Theta1;
-    GLfloat leg1Theta2;
-    GLfloat leg2Theta1;
-    GLfloat leg2Theta2;
-    GLfloat armTheta;
-    GLfloat speed;
+    GLdouble gX; 
+    GLdouble gY;
+    GLdouble gZ;
+    GLdouble totalHeight;
+    GLdouble legHeight;
+    GLdouble legWidth;
+    GLdouble bodyHeight;
+    GLdouble bodyWidth;
+    GLdouble radiusHead;
+    GLdouble armHeight ;
+    GLdouble armWidth;
+    GLdouble leg1Theta1;
+    GLdouble leg1Theta2;
+    GLdouble leg2Theta1;
+    GLdouble leg2Theta2;
+    GLdouble armTheta;
+    GLdouble speed;
     GLdouble jumpingSpeed;
-    GLfloat jumpingGround;
+    GLdouble jumpingGround;
     bool isJumping;
     bool hasJumpedToMax;
-    GLfloat da;
-    GLfloat da2;
-    GLfloat groundLimit;
+    GLdouble da;
+    GLdouble da2;
+    GLdouble groundLimit;
     vec3 bodyColor;
     bool isShooting;
     GLint ammo;
     GLint totalAmmo;
     vec3 shootColor;
-    GLfloat lookingAngle;
+    GLdouble lookingAngle;
     vec3 directionVector;
 
-    void DrawCharacter(GLfloat x, GLfloat y, GLfloat gZ);
-    void DrawRectangle(GLfloat height, GLfloat width, GLfloat depth, GLfloat R, GLfloat G, GLfloat B);
-    void DrawCircle(GLfloat radius, GLfloat R, GLfloat G, GLfloat B);
+    void DrawCharacter(GLdouble x, GLdouble y, GLdouble gZ);
+    void DrawRectangle(GLdouble height, GLdouble width, GLdouble depth, GLfloat R, GLfloat G, GLfloat B);
+    void DrawCircle(GLdouble radius, GLfloat R, GLfloat G, GLfloat B);
     void DrawLegs();
     void DrawArms();
     void DrawHitbox();
     void DrawAxes();
-    bool CollidesLeftWithAPlatform(GLfloat inc, Map* map);
-    bool CollidesRightWithAPlatform(GLfloat inc, Map* map);
-    bool CollidesDownWithAPlatform(GLfloat inc, Map* map);
-    bool CollidesUpWithAPlatform(GLfloat inc, Map* map);
+    bool CollidesLeftWithAPlatform(Map* map);
+    bool CollidesRightWithAPlatform(Map* map);
+    bool CollidesDownWithAPlatform(Map* map);
+    bool CollidesUpWithAPlatform(Map* map);
 
 public:
     bool isFacingRight;
-    Character(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor, vec3 shootColor, GLint totalAmmo) {
+    Character(GLdouble x, GLdouble y, GLdouble totalHeight, GLdouble groundLimit, vec3 bodyColor, vec3 shootColor, GLint totalAmmo) {
         gX = x; 
         gY = y;
         gZ = y/4;
@@ -108,14 +108,15 @@ public:
         this->shootColor = shootColor;
         lookingAngle = 0;
         directionVector = {0.0, 0.0, 0.0};
-        this->directionVector.x = cos((this->lookingAngle) * M_PI/180);
+        this->directionVector.x = cos(this->lookingAngle * M_PI/180);
         this->directionVector.z = sin(this->lookingAngle * M_PI/180);
 
     };
     void Draw(){ 
         DrawCharacter(gX, gY, gZ);
     };
-    void MoveInXZ(bool isToRight, GLdouble timeDiff, Map* map);
+    void MoveInXZ(bool isForward, GLdouble timeDiff, Map* map);
+    void AnimateLegs();
     void StartMoving(bool isToRight);
     bool getIsDirectionToRight();
     void MoveInY(GLdouble timeDiff, bool isPressingJumpButton, Map* map);
@@ -123,20 +124,20 @@ public:
     void StartJumping();
     bool getIsJumping();
     vec3 getPosition();
-    GLfloat GetgX();
-    GLfloat GetgY();
-    GLfloat GetgZ() {
+    GLdouble GetgX();
+    GLdouble GetgY();
+    GLdouble GetgZ() {
         return this->gZ;
     }
-    GLfloat GetCharacterGroundY();
-    GLfloat GetCharacterHighestY();
-    GLfloat GetBodyWidth();
-    GLfloat GetBodyHeight();
-    GLfloat GetTotalHeight();
-    void MoveArmsAngle(GLfloat x, GLfloat y);
+    GLdouble GetCharacterGroundY();
+    GLdouble GetCharacterHighestY();
+    GLdouble GetBodyWidth();
+    GLdouble GetBodyHeight();
+    GLdouble GetTotalHeight();
+    void MoveArmsAngle(GLdouble x, GLdouble y);
     Shot* Shoot();
     void RechargeShot();
-    bool CollidesWithPoint(GLfloat x, GLfloat y);
+    bool CollidesWithPoint(GLdouble x, GLdouble y);
     bool CollidesWithEndOfMap(Map* map);
     void TurnRight(GLdouble timeDiff);
     void TurnLeft(GLdouble timeDiff);

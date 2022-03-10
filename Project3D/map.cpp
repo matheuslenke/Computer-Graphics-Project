@@ -76,12 +76,13 @@ bool Map::ColidesWithAPlatform(GLfloat x, GLfloat y, GLfloat z) {
         return true;
     }
     // Colisão com os limites em Z do mapa
-    if (z <= this->gZ || z >= (this->gZ + this->sizeZ)) {
+    if (z <= this->gZ + 1 || z >= (this->gZ + this->sizeZ)) {
+        // cout << "Colidiu em Z: " << z << " , " << this->gZ << endl;
         return true;
     }
     // Colisão com alguma plataforma
     for (Platform platform : this->platforms) {
-        collides = platform.isColiding(x, y);
+        collides = platform.isColiding(x, y, z);
         if (collides == true) { return true; }
     }
 
@@ -91,7 +92,7 @@ bool Map::ColidesWithAPlatform(GLfloat x, GLfloat y, GLfloat z) {
 vec2 *Map::GetPlatformLimitsAtPoint(GLfloat x, GLfloat y) {
     // Colisão com alguma plataforma
     for (Platform platform : this->platforms) {
-        if(platform.isColiding(x, y)) {
+        if(platform.isColiding(x, y, 0)) {
             return platform.ReturnPlatformXLimits();
         }
     }

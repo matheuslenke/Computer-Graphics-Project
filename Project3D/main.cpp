@@ -391,7 +391,7 @@ void display (void) {
             glTranslatef(-player->GetgX(), -player->GetgY(), -player->GetgZ());
         }
 
-        GLfloat light_position[] = { player->GetgX() - player->GetTotalHeight(), player->GetgY() + (GLfloat)1.5 * player->GetTotalHeight(), map->GetSizeZ(), 1.0 };
+        GLfloat light_position[] = { (GLfloat) (player->GetgX() - player->GetTotalHeight()), (GLfloat) (player->GetgY() + (GLfloat)1.5 * player->GetTotalHeight()), map->GetSizeZ(), 1.0 };
 
         // cout << "Ligth position:" << light_position[0] << " , " << light_position[1]<<" , " << player->GetgY() << endl;
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);

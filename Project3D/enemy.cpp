@@ -15,9 +15,9 @@ void Enemy::MoveInX(GLdouble timeDiff, Map* map, Character* player) {
       Character::StartStanding();
       return;
   }
-  if (CollidesRightWithAPlatform(inc, map)) {
+  if (CollidesRightWithAPlatform(map)) {
       this->isFacingRight = false;
-  } else if (CollidesLeftWithAPlatform(inc, map)) {
+  } else if (CollidesLeftWithAPlatform(map)) {
       this->isFacingRight = true;
   }
   if (isFacingRight) {
@@ -26,7 +26,7 @@ void Enemy::MoveInX(GLdouble timeDiff, Map* map, Character* player) {
             return;
         }
         if (
-            CollidesRightWithAPlatform(inc, map) == true ) {
+            CollidesRightWithAPlatform(map) == true ) {
             this->isFacingRight = false;
             Character::StartMoving(false);
             return;
@@ -50,7 +50,7 @@ void Enemy::MoveInX(GLdouble timeDiff, Map* map, Character* player) {
             Character::StartStanding();
             return;
         }
-        if (CollidesLeftWithAPlatform(inc, map) == true) {
+        if (CollidesLeftWithAPlatform(map) == true) {
             this->isFacingRight = true;
             Character::StartMoving(true);
             return;
@@ -78,7 +78,7 @@ void Enemy::MoveInY(GLdouble timeDiff, Map* map, Character* player) {
     }
     GLfloat inc = this->jumpingSpeed * timeDiff;
 
-    if (CollidesDownWithAPlatform(inc, map)) {
+    if (CollidesDownWithAPlatform(map)) {
         foundGround = true;
         this->groundLimit = Character::GetCharacterGroundY();
         vec2* positionX = map->GetPlatformLimitsAtPoint(this->gX - this->bodyWidth/2, this->gY - 0.5*totalHeight - inc);

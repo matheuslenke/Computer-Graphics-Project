@@ -99,10 +99,10 @@ void Platform::DrawRectangle(GLfloat height, GLfloat width, GLfloat depth, GLflo
     glEnd();
 }
 
-bool Platform::isColiding(GLfloat x, GLfloat y) {
+bool Platform::isColiding(GLfloat x, GLfloat y, GLfloat z) {
     if (x >= this->gX && x <= this->gX + this->sizeX) {
         if (y <= this->gY && y >= this->gY - this->sizeY) {
-            return true;
+                return true;
         }
     }
     return false;

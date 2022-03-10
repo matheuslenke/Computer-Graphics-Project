@@ -34,7 +34,7 @@ public:
     void Draw(){ 
         DrawPlatform(gX, gY, gZ);
     };
-    bool isColiding(GLfloat x, GLfloat y);
+    bool isColiding(GLfloat x, GLfloat y, GLfloat z);
     vec2 *ReturnPlatformXLimits() {
         vec2* pos = new vec2(this->gX, this->gX + sizeX);
         return pos;
