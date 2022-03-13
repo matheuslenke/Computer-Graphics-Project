@@ -99,12 +99,14 @@ vec2 *Map::GetPlatformLimitsAtPoint(GLfloat x, GLfloat y) {
     return nullptr;
 }
 
-bool Map::CollidesWithEnemy(GLfloat x, GLfloat y) {
+bool Map::CollidesWithEnemy(GLfloat x, GLfloat y, GLfloat z) {
     for (Enemy* enemy: this->enemies) {
         if(x >= enemy->GetgX() - enemy->GetBodyWidth()/2 && x <= enemy->GetgX() + enemy->GetBodyWidth()/2 ) {
             if(y >= enemy->GetgY() - 0.5* enemy->GetTotalHeight() && y <= enemy->GetgY() + 0.5* enemy->GetTotalHeight()) {
-                return true;
-                break;
+                if(z >= enemy->GetgZ() - enemy->GetBodyWidth()/2 && z <= enemy->GetgZ() + enemy->GetBodyWidth()/2) {
+                    return true;
+                    break;
+                }
             }
         }
     }
@@ -165,9 +167,9 @@ void Map::CheckIfEnemyIsHit(vector<Shot*> playerShots) {
     for(Shot* shot : playerShots) {
         for(vector<Enemy*>::iterator index = enemies.begin(); index != enemies.end();) {
             Enemy* enemy = *index;
-            vec2 shotPos = shot->GetPos();
+            vec3 shotPos = shot->GetPos();
             GLfloat shotRadius = shot->GetRadius();
-            if(enemy->CollidesWithPoint(shotPos.x, shotPos.y)) {
+            if(enemy->CollidesWithPoint(shotPos.x, shotPos.y, shotPos.z)) {
                 shot->SetHitted();
                 this->enemies.erase(index);
             } else {
@@ -180,10 +182,10 @@ void Map::CheckIfEnemyIsHit(vector<Shot*> playerShots) {
 GLboolean Map::CheckIfPlayerIsHit(Character* player) {
     for(vector<Shot*>::iterator index = this->enemyShots.begin(); index != this->enemyShots.end();) {   
         Shot* shot = *index;
-        vec2 shotPos = shot->GetPos();
+        vec3 shotPos = shot->GetPos();
         GLfloat shotRadius = shot->GetRadius();
         vec3 playerPosition = player->getPosition();
-        if(player->CollidesWithPoint(shotPos.x, shotPos.y) == true) {
+        if(player->CollidesWithPoint(shotPos.x, shotPos.y, shotPos.z) == true) {
             shot->SetHitted();
             return true;
         } else {

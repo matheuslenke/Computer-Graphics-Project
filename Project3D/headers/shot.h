@@ -16,33 +16,35 @@ class Shot {
     GLdouble gYInit; 
     GLdouble gX; 
     GLdouble gY; 
-    GLdouble gDirectionAng;
+    GLdouble gZ; 
     GLdouble gVel;
     GLdouble shotRadius;
     GLboolean hitted;
+    vec3 directionVector;
     vec3 color;
 private:
     void DrawCirc(GLdouble radius, GLfloat R, GLfloat G, GLfloat B);
-    void DrawShot(GLdouble x, GLdouble y);
+    void DrawShot(GLdouble x, GLdouble y, GLdouble z);
 public:
-    Shot(GLdouble x, GLdouble y, GLdouble directionAng, GLdouble shotRadius, GLdouble speed, vec3 color){
+    Shot(GLdouble x, GLdouble y, GLdouble z, vec3 directionVector, GLdouble shotRadius, GLdouble speed, vec3 color){
         gXInit = x; 
         gYInit = y; 
+        this->directionVector = directionVector;
         gX = x; 
         gY = y; 
-        gDirectionAng = directionAng; 
+        gZ = z;
         gVel = speed;
         this->shotRadius = shotRadius;
         this->color = color;
         hitted = false;
     };
     void Draw(){ 
-        DrawShot(gX, gY);
+        DrawShot(gX, gY, gZ);
     };
     void Move(GLdouble timeDifference);
     bool Valid(Map* map);
-    vec2 GetPos(){
-        return vec2(this->gX, this->gY);
+    vec3 GetPos(){
+        return vec3(this->gX, this->gY, this->gZ);
     };
     GLfloat GetRadius();
     void SetHitted() {

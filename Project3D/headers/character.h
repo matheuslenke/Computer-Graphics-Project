@@ -42,7 +42,8 @@ protected:
     GLdouble leg1Theta2;
     GLdouble leg2Theta1;
     GLdouble leg2Theta2;
-    GLdouble armTheta;
+    GLdouble armThetaXZ;
+    GLdouble armThetaXY;
     GLdouble speed;
     GLdouble jumpingSpeed;
     GLdouble jumpingGround;
@@ -66,13 +67,12 @@ protected:
     void DrawArms();
     void DrawHitbox();
     void DrawAxes();
-    bool CollidesLeftWithAPlatform(Map* map);
-    bool CollidesRightWithAPlatform(Map* map);
+    bool CollidesHorizontallyWithAPlatform(Map* map);
     bool CollidesDownWithAPlatform(Map* map);
     bool CollidesUpWithAPlatform(Map* map);
 
 public:
-    bool isFacingRight;
+    bool isFacingForward;
     Character(GLdouble x, GLdouble y, GLdouble totalHeight, GLdouble groundLimit, vec3 bodyColor, vec3 shootColor, GLint totalAmmo) {
         gX = x; 
         gY = y;
@@ -83,7 +83,8 @@ public:
         leg1Theta2 = 0;
         leg2Theta1 = 0;
         leg2Theta2 = 0;
-        armTheta = 90;
+        armThetaXZ = 0;
+        armThetaXY = 0;
         legHeight = totalHeight * 0.2;
         legWidth = totalHeight * 0.1;
         bodyHeight = totalHeight * 0.4;
@@ -98,13 +99,13 @@ public:
         hasJumpedToMax = false;
         da = legMovingSpeed;
         da2 = -legMovingSpeed;
-        isFacingRight = true;
+        isFacingForward = true;
         this->groundLimit = groundLimit;
         this->jumpingGround = groundLimit;
         this->bodyColor = bodyColor;
         isShooting = false;
         ammo = totalAmmo;
-        this->totalAmmo = totalAmmo;
+        this->totalAmmo = 100;
         this->shootColor = shootColor;
         lookingAngle = 0;
         directionVector = {0.0, 0.0, 0.0};
@@ -134,10 +135,10 @@ public:
     GLdouble GetBodyWidth();
     GLdouble GetBodyHeight();
     GLdouble GetTotalHeight();
-    void MoveArmsAngle(GLdouble x, GLdouble y);
+    void MoveArmsAngle(GLdouble x, GLdouble y, GLdouble z);
     Shot* Shoot();
     void RechargeShot();
-    bool CollidesWithPoint(GLdouble x, GLdouble y);
+    bool CollidesWithPoint(GLdouble x, GLdouble y, GLdouble z);
     bool CollidesWithEndOfMap(Map* map);
     void TurnRight(GLdouble timeDiff);
     void TurnLeft(GLdouble timeDiff);

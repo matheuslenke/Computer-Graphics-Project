@@ -51,6 +51,8 @@ Map* map = nullptr; // Mapa do nível
 GLboolean gameOver = false;
 GLboolean gameWin = false;
 string filename = "";
+int lastAimY = 0;
+int lastAimX = 0;
 
 // Parametros de ação dos inimigos
 GLfloat changeActionActualTime = 0;
@@ -94,9 +96,6 @@ GLuint textureEarth;
 GLuint textureSun;
 GLuint texturePlane;
 
-//Cotroles de giro
-double angleDay = 0;
-double angleYear = 0;
 
 //Camera controls
 double camDist=50;
@@ -405,10 +404,10 @@ void display (void) {
         map->Draw();
         player->Draw();
 
-        // for (Shot* shot : playerShots ) {
-        //     shot->Draw();
-        // }
-        // map->DrawShots(); // Tiros dos inimigos
+        for (Shot* shot : playerShots ) {
+            shot->Draw();
+        }
+        map->DrawShots(); // Tiros dos inimigos
     }
 
     glutSwapBuffers();
@@ -447,9 +446,6 @@ void mouse_callback(int button, int state, int x, int y)
 {
     if(gameOver || gameWin) { return; }
     if(button == GLUT_LEFT_BUTTON) {
-
-    } 
-    if(button == GLUT_RIGHT_BUTTON) {
         if(state == 1) {
             Shot* newShot = player->Shoot();
             if(newShot) {
@@ -458,8 +454,8 @@ void mouse_callback(int button, int state, int x, int y)
         }
     }
     if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-        lastX = x;
-        lastY = y;
+        // lastX = x;
+        // lastY = y;
         buttonDown = 1;
     } 
     if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP) {
@@ -469,39 +465,39 @@ void mouse_callback(int button, int state, int x, int y)
 
 void mouse_motion(int x, int y)
 {
-    if (!buttonDown)
+    if(gameOver || gameWin) { return; }
+    // Movimento do braço
+    int incrementY = (y - lastAimY);
+    int incrementX = (x - lastAimX);
+    if(incrementY != 0) {
+        player->MoveArmsAngle(0, incrementY, 0);
+        lastAimY = y;
+    }
+    if (incrementX != 0) {
+        player->MoveArmsAngle(incrementX, 0, 0);
+        lastAimX = x;
+    }
+
+    // Movimento da Camera
+    if (!keyStatus[(int)('x')])
         return;
-    
+
+    GLdouble newCamXZAngle = camXZAngle + y - lastY;
+    newCamXZAngle = (int) newCamXZAngle % 360;
+    if(newCamXZAngle >= -60 && newCamXZAngle <= 60 ) {
+        camXZAngle = newCamXZAngle;
+    }
     camXYAngle += x - lastX;
-    camXZAngle += y - lastY;
-    
     camXYAngle = (int)camXYAngle % 360;
-    camXZAngle = (int)camXZAngle % 360;
-    
     lastX = x;
     lastY = y;
+    
 
-    if(gameOver || gameWin) { return; }
     y = (Height - y);
-    GLfloat normalizedY = (float)y /(float) Height;
-    GLfloat normalizedX = (float)x /(float) Width;
-    // Transformações para o x e y do mouse coincidirem com o do mapa
-    GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
-    GLfloat transformedX = (player->GetgX() - ViewingWidth/2 ) + ViewingWidth * normalizedX;
-    GLfloat transformedY = ( ViewingHeight * normalizedY) + cameraY;
-    player->MoveArmsAngle(transformedX, transformedY);
 }
 
 void idle()
 {
-    angleDay+=0.05;
-    angleYear+=0.01;
-    
-    if (angleDay > 360) angleDay = 0;
-    else if (angleDay < 0) angleDay = 360;
-
-    if (angleYear > 360) angleYear = 0;
-    else if (angleYear < 0) angleYear = 360;
 
     GLdouble currentTime, timeDifference;
     static GLdouble previousTime =  glutGet(GLUT_ELAPSED_TIME);
@@ -534,6 +530,9 @@ void idle()
     if(keyStatus[(int)('a')])
     {
         player->TurnLeft(timeDifference);
+    }
+    if (keyStatus[(int)('x')]) {
+
     }
     if (keyStatus[SPACEBAR]) {
         player->MoveInY(timeDifference, true, map);
@@ -682,6 +681,11 @@ void keyboard(unsigned char key, int x, int y)
         case 'i':
             keyStatus[(int)('i')] = 1;
             break;
+        case 'x':
+            keyStatus[(int)('x')] = 1;
+            lastX = x;
+            lastY = y;
+            break;
         case SPACEBAR:
             keyStatus[SPACEBAR] = 1;
             if(!player->getIsJumping()) {
@@ -723,6 +727,7 @@ int main (int argc, char **argv) {
     glutKeyboardFunc(keyboard);
     glutKeyboardUpFunc(keyUp);
     glutMotionFunc(mouse_motion);
+    glutPassiveMotionFunc(mouse_motion);
     glutMouseFunc(mouse_callback);
 
     glutMainLoop ();

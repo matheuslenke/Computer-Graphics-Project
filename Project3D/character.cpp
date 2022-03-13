@@ -2,6 +2,30 @@
 #include <math.h>
 #include <iostream>
 
+
+double angleToRadians(double angle){
+  return (angle*M_PI)/180.0;
+}
+
+void pRotatef(double angle, double &xOut, double &yOut, double x0 = 0., double y0 = 0.){
+  double tetha = angleToRadians(angle);
+
+  double _sin = sin(tetha);
+  double _cos = cos(tetha);
+
+  // Translate point to origin
+  xOut -= x0;
+  yOut -= y0;
+
+  // rotate
+  double xNew = xOut*_cos - yOut*_sin;
+  double yNew = xOut*_sin + yOut*_cos;
+
+  // translate back 
+  xOut = xNew + x0;
+  yOut = yNew + y0;
+}
+
 /* <-- Seção de Desenhos --> */
 void Character::DrawCharacter(GLdouble x, GLdouble y, GLdouble z)
 {
@@ -60,19 +84,31 @@ void Character::DrawLegs() {
 }
 
 void Character::DrawArms() {
-    glPushMatrix();
-    if(!this->isFacingRight) {
-        glTranslatef(0, 0.3 * totalHeight, 0);
-        glRotatef(-this->armTheta, 0, 0, 1);
-
+    if(!this->isFacingForward) {
+        glPushMatrix();
+        glTranslatef(0, 0.3 * totalHeight, -bodyWidth/2 - armWidth/2);
+        glRotatef(0, 0, 0, 1);
         DrawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+        glPopMatrix();
+        glPushMatrix();
+        glTranslatef(0, 0.3 * totalHeight, bodyWidth/2 + armWidth/2);
+        glRotatef(90 -this->armThetaXZ, 0, 0, 1);
+        glRotatef(this->armThetaXY, 1,0,0);
+        DrawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+        glPopMatrix();
     } else {
-        glTranslatef(0, 0.3 * totalHeight, 0);
-        glRotatef(this->armTheta, 0, 0, 1);
-
+        glPushMatrix();
+        glTranslatef(0, 0.3 * totalHeight, -bodyWidth/2 - armWidth/2);
+        glRotatef(0, 0, 0, 1);
         DrawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+        glPopMatrix();
+        glPushMatrix();
+        glTranslatef(0, 0.3 * totalHeight, bodyWidth/2 + armWidth/2);
+        glRotatef(90 + this->armThetaXZ, 0, 0, 1);
+        glRotatef(this->armThetaXY, 1,0,0);
+        DrawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+        glPopMatrix();
     }
-    // cout << this->armTheta << endl;
     glPopMatrix();
 }
 
@@ -245,30 +281,30 @@ void Character::DrawHitbox() {
 }
 
 /* <-- Seção de Animações --> */
-void Character::StartMoving(bool isToRight) {
+void Character::StartMoving(bool isToForward) {
     if (isJumping) {
-        // if (isToRight) {
-        //     this->isFacingRight = true;
+        // if (isToForward) {
+        //     this->isFacingForward = true;
         //     this->leg1Theta1 = 40;
         //     this->leg1Theta2 = -100;
         //     this->leg2Theta1 = 45;
         //     this->leg2Theta2 = -100;
         // } else {
-        //     this->isFacingRight = false;
+        //     this->isFacingForward = false;
         //     this->leg1Theta1 = -40;
         //     this->leg1Theta2 = 100;
         //     this->leg2Theta1 = -45;
         //     this->leg2Theta2 = 100;
         // }
     }
-    else if (isToRight) {
-        this->isFacingRight = true;
+    else if (isToForward) {
+        // this->isFacingForward = true;
         leg1Theta1 = 30;
         leg2Theta1 = -30;
         da = -legMovingSpeed;
         da2 = legMovingSpeed;
     } else {
-        this->isFacingRight = false;
+        // this->isFacingForward = false;
         leg1Theta1 = -30;
         leg2Theta1 = 30;
         da = legMovingSpeed;
@@ -279,7 +315,7 @@ void Character::StartMoving(bool isToRight) {
 void Character::StartJumping() {
     this->isJumping = true;
     this->jumpingGround = GetCharacterGroundY();
-    if(isFacingRight) {
+    if(isFacingForward) {
         this->leg1Theta1 = 40;
         this->leg1Theta2 = -100;
         this->leg2Theta1 = 45;
@@ -303,12 +339,11 @@ void Character::StartStanding() {
 void Character::MoveInXZ(bool isForward, GLdouble timeDiff, Map* map) {
 
     if (isForward) {
-        // this->isFacingRight = true;
         GLdouble incx = this->speed * timeDiff * this->directionVector.x;
         GLdouble incz = -this->speed * timeDiff * this->directionVector.z;
         this->gX += incx;
         this->gZ += incz;
-        if (CollidesRightWithAPlatform(map) == true) {
+        if (CollidesHorizontallyWithAPlatform(map) == true) {
             this->gX -= incx;
             this->gZ -= incz;
             return;
@@ -317,13 +352,12 @@ void Character::MoveInXZ(bool isForward, GLdouble timeDiff, Map* map) {
         this->AnimateLegs();
 
     } else {
-        // this->isFacingRight = false;
         GLdouble incx = this->speed * timeDiff * -this->directionVector.x;
         GLdouble incz = -this->speed * timeDiff * -this->directionVector.z;
         this->gX += incx;
         this->gZ += incz;
 
-        if (CollidesLeftWithAPlatform(map) == true) {
+        if (CollidesHorizontallyWithAPlatform(map) == true) {
             this->gX -= incx;
             this->gZ -= incz;
             return;
@@ -384,35 +418,31 @@ void Character::MoveInY(GLdouble timeDiff, bool isPressingJumpButton, Map* map) 
     }
 }
 
-void Character::MoveArmsAngle(GLdouble x, GLdouble y) {
+void Character::MoveArmsAngle(GLdouble x, GLdouble y, GLdouble z) {
     GLdouble armX = this->gX;
     GLdouble armY = this->gY + 0.3 * totalHeight;
     // cout << this->gX << " : " << x << endl;
-    if (isFacingRight) {
-        GLdouble theta = atan2(y - armY, x - armX);
-        GLdouble degrees = theta * (180/M_PI); // Convertendo de radianos para graus
-        // cout << degrees << endl;
-        if (degrees < 45 && degrees > -45 ) {
-            this->armTheta = 90 - theta * (180/M_PI);
+    GLdouble thetaXZ = this->armThetaXZ + (y * (-0.2));
+    GLdouble thetaXY = this->armThetaXY + (x * (-0.2));
+    if (this->isFacingForward) {
+        if (thetaXZ < 45 && thetaXZ > -45 ) {
+            this->armThetaXZ += (y * (-0.2));
         }
-    } else {
-        GLdouble theta = atan2(y - armY, armX - x);
-        GLdouble degrees = theta * (180/M_PI); // Convertendo de radianos para graus
-        // cout << degrees << endl;
-        if (degrees < 45 && degrees > -45 ) {
-            this->armTheta = 90 - theta * (180/M_PI) ;
+        if(thetaXY < 45 && thetaXY > -45) {
+            // cout << "Arms angle: " << this->armThetaXY << endl;
+            this->armThetaXY += (x * (-0.2));
         }
     }
 }
 
 void Character::TurnRight(GLdouble timeDiff) {
     if (this->isJumping == true) {
-        // cout << "Pulando!" << endl;
         return;
     }
-    if (this->lookingAngle <= -360) {
-        this->lookingAngle = 0;
+    if (this->lookingAngle <= 0) {
+        this->lookingAngle = 360;
     }
+
     this->lookingAngle -= timeDiff * turningSpeed;
     this->directionVector.x = cos((this->lookingAngle) * M_PI/180 );
     this->directionVector.z = sin(this->lookingAngle * M_PI/180);
@@ -436,25 +466,71 @@ void Character::TurnLeft(GLdouble timeDiff) {
 }
 
 // Funcao auxiliar de rotacao para posicionar o tiro
-void RotatePointUtil(GLdouble x, GLdouble y, GLdouble height, GLdouble angle, GLdouble &xOut, GLdouble &yOut){
-    yOut = y + height*sin (angle*M_PI/180);
-    xOut = x + height*cos (angle*M_PI/180);
+void RotatePointUtil(GLdouble x, GLdouble y, GLdouble height, GLdouble angleXZ, GLdouble &xOut, GLdouble &yOut){
+    yOut = y + height*sin(angleXZ*M_PI/180);
+    xOut = x + height*cos(angleXZ*M_PI/180);
+}
+// Funcao auxiliar de rotacao para posicionar o tiro
+void RotatePointUtil3D(GLdouble x, GLdouble y, GLdouble z, GLdouble height, GLdouble angleXZ, GLdouble angleXY, GLdouble &xOut, GLdouble &yOut, GLdouble &zOut){
+    yOut = y + height*sin(angleXZ*M_PI/180)+ height*sin((90-angleXY)*M_PI/180);
+    xOut = x + height*cos(angleXZ*M_PI/180)+height*cos(angleXY*M_PI/180);
+    zOut = z + height*sin(angleXY*M_PI/180)+height*cos(90-angleXY)*M_PI/180;
+}
+
+//Funcao auxiliar para normalizar um vetor a/|a|
+void normalize(vec3 &a)
+{
+    double norm = sqrt(a.x*a.x+a.y*a.y+a.z*a.z); 
+    a.x /= norm;
+    a.y /= norm;
+    a.z /= norm;
 }
 
 Shot* Character::Shoot() {
     if (this->ammo > 0) {
-        // cout << ammo << endl;
-        GLdouble tX = this->gX, tY = this->gY, tTheta = 90 + this->armTheta;
-        tY += 0.2 * totalHeight;
+        vec3 initialArmPoint;
+        vec3 finalArmPoint;
+        initialArmPoint.x = this->gX;
+        initialArmPoint.y = this->gY + 0.3 * totalHeight;
+        initialArmPoint.z = this->gZ + bodyWidth/2 + armWidth/2;
+        GLdouble tX = this->gX,
+        tY = initialArmPoint.y,
+        tZ = initialArmPoint.z,
+        tThetaXZ = 90 + this->armThetaXZ,
+        tThetaXY = this->armThetaXY;
+        cout << "lookingAngle: " << this->lookingAngle<< endl;
 
-        if (isFacingRight) {
-            tTheta = 180 - tTheta;
-            RotatePointUtil(tX, tY, this->armHeight , tTheta, tX, tY);
+        GLdouble inicX = tX;
+        GLdouble inicY = tY;
+        GLdouble inicZ = tZ;
+        GLdouble lixo;
+
+        if (isFacingForward) {
+            // Tentativa 102401204
+            tX = inicX + this->armHeight*(cos(-this->lookingAngle*M_PI/180)+cos(90+this->armThetaXZ*M_PI/180));
+            tY = inicY + this->armHeight*(sin(this->armThetaXZ*M_PI/180));
+            tZ = inicZ + this->armHeight*(sin(this->lookingAngle*M_PI/180)+sin(this->armThetaXY*M_PI/180));
+
+            // lemque
+            // RotatePointUtil(inicX, inicY, this->armHeight , this->armThetaXZ, tX, tY);
+            // RotatePointUtil(inicX, inicZ, -this->armHeight , tThetaXY, lixo, tZ);
+            // cipri
+            // pRotatef(this->armThetaXY, tX, tZ, inicX, inicZ);
+            // RotatePointUtil3D(tX, tY, tZ, this->armHeight, this->armThetaXZ, this->armThetaXY, tX, tY, tZ);
+            
+            // RotatePointUtil(tX, tY, this->armHeight , this->armThetaXZ, tX, tY);
         } else {
-            RotatePointUtil(tX, tY, this->armHeight , tTheta, tX, tY);
+            // RotatePointUtil(tX, tY, this->armHeight , tThetaXZ, tX, tY);
         }
         this->ammo -= 1;
-        Shot* shot = new Shot(tX, tY, tTheta, armWidth * 0.6, this->speed * 2, this->shootColor);
+        vec3 shotDirection = {tX-initialArmPoint.x, tY-initialArmPoint.y, tZ - initialArmPoint.z};
+        if (!isFacingForward) {
+            shotDirection.x = -shotDirection.x;
+        }
+        normalize(shotDirection);
+        // shotDirection.y = sinf((90- tThetaXZ) * M_PI/180);
+        // cout << "Shot position: " << shotDirection.x << "," << shotDirection.y << "," << shotDirection.z << endl;
+        Shot* shot = new Shot(tX, tY, tZ, shotDirection, armWidth * 0.6, this->speed, this->shootColor);
         return shot;
     }
     return nullptr;
@@ -477,7 +553,7 @@ bool Character::CollidesDownWithAPlatform(Map* map) {
             GLdouble actualZ = this->gZ +(this->bodyWidth/2) * sinf(theta);
         if (map->ColidesWithAPlatform(actualX, this->gY - 0.6*totalHeight, actualZ) == true
             ||
-            map->CollidesWithEnemy(actualX, this->gY - 0.6*totalHeight) == true
+            map->CollidesWithEnemy(actualX, this->gY - 0.6*totalHeight, actualZ) == true
             ) {
             return true;
         }
@@ -493,7 +569,7 @@ bool Character::CollidesUpWithAPlatform(Map* map) {
             GLdouble actualZ = this->gZ +(this->bodyWidth/2) * sinf(theta);
         if (map->ColidesWithAPlatform(actualX, this->gY + 0.6*totalHeight, actualZ) == true
             ||
-            map->CollidesWithEnemy(actualX, this->gY + 0.6*totalHeight) == true   
+            map->CollidesWithEnemy(actualX, this->gY + 0.6*totalHeight, actualZ) == true   
         ) {
             return true;
         }
@@ -502,25 +578,7 @@ bool Character::CollidesUpWithAPlatform(Map* map) {
     return false;
 }
 
-bool Character::CollidesLeftWithAPlatform(Map* map) {
-    int nPartitions = 72;
-    for(double i = -0.48; i<= 0.41; i+=0.1) {
-        for(double j = 0; j < nPartitions; j++) {
-            float theta = 2.0f * M_PI * float(j) / float(nPartitions);//get the current angle
-            GLdouble actualX = this->gX + (this->bodyWidth/2) * cosf(theta);
-            GLdouble actualZ = this->gZ + (this->bodyWidth/2) * sinf(theta);
-            if (map->ColidesWithAPlatform(actualX, this->gY + i*totalHeight, actualZ) == true
-                // ||
-                // map->CollidesWithEnemy(this->gX + this->bodyWidth/2 + inc, this->gY + i*totalHeight) == true
-            ) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-bool Character::CollidesRightWithAPlatform(Map* map) {
+bool Character::CollidesHorizontallyWithAPlatform(Map* map) {
     int nPartitions = 72;
     for(double i = -0.48; i<= 0.41; i+=0.1) {
         for(double j = 0; j < nPartitions; j++) {
@@ -528,8 +586,8 @@ bool Character::CollidesRightWithAPlatform(Map* map) {
             GLdouble actualX = this->gX + (this->bodyWidth/2) * cosf(theta);
             GLdouble actualZ = this->gZ + (this->bodyWidth/2) * sinf(theta);
             if (map->ColidesWithAPlatform(actualX, this->gY + i*totalHeight, actualZ) == true
-                // ||
-                // map->CollidesWithEnemy(this->gX + this->bodyWidth/2 + inc, this->gY + i*totalHeight) == true
+                ||
+                map->CollidesWithEnemy(actualX, this->gY + i*totalHeight, actualZ) == true
             ) {
                 return true;
             }
@@ -538,10 +596,12 @@ bool Character::CollidesRightWithAPlatform(Map* map) {
     return false;
 }
 
-bool Character::CollidesWithPoint(GLdouble x, GLdouble y) {
+bool Character::CollidesWithPoint(GLdouble x, GLdouble y, GLdouble z) {
     if(x > this->gX - bodyWidth/2 && x < this->gX + bodyWidth/2) {
         if(y > this->gY - 0.5 * totalHeight && y < this->gY + 0.5 * totalHeight) {
-            return true;
+            if (z > this->gZ - bodyWidth/2 && z < this->gZ + bodyWidth/2) {
+                return true;
+            }
         }
     }
     return false;
@@ -556,7 +616,7 @@ bool Character::CollidesWithEndOfMap(Map* map) {
 
 /* <-- Getters e Setters --> */
 bool Character::getIsDirectionToRight() {
-    return this->isFacingRight;
+    return this->isFacingForward;
 }
 
 bool Character::getIsJumping() {

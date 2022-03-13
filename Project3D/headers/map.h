@@ -68,7 +68,7 @@ public:
     void CheckIfEnemyIsHit(vector<Shot*> playerShots);
     GLboolean CheckIfPlayerIsHit(Character* player);
     bool ColidesWithRightEnd(GLfloat x);
-    bool CollidesWithEnemy(GLfloat x, GLfloat y);
+    bool CollidesWithEnemy(GLfloat x, GLfloat y, GLfloat z);
 };
 
 #endif	/* MAP_H */
