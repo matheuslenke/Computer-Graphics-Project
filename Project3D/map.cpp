@@ -120,12 +120,12 @@ bool Map::ColidesWithRightEnd(GLfloat x) {
     return false;
 }
 
-void Map::ExecuteEnemiesActions(GLdouble timeDifference, Character* player, GLboolean stopMoving) {
+void Map::ExecuteEnemiesActions(GLdouble timeDifference, Character* player, EnemyStatus enemyStatus) {
     vec3 playerPosition = player->getPosition();
     for (Enemy* enemy : this->enemies) {
         Shot* aux;
         enemy->AdjustArms(vec3(playerPosition.x, playerPosition.y, playerPosition.z));
-        aux = enemy->DoAction(timeDifference, this, player, stopMoving);
+        aux = enemy->DoAction(timeDifference, this, player, enemyStatus);
         if (aux != nullptr) {
             enemyShots.push_back(aux);
         }

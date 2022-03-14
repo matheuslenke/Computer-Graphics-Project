@@ -27,6 +27,10 @@ using namespace std;
 using namespace tinyxml2;
 
 #define SPACEBAR 32
+// #define SHOOTING_AND_MOVING 0
+// #define SHOOTING 1
+// #define MOVING 2
+// #define STOP 3
 
 // Window dimensions
 const GLint Width = 500;
@@ -59,7 +63,8 @@ GLfloat changeActionActualTime = 0;
 const GLfloat timeToChangeAction = 2; // Tempo em segundos
 const GLint playerAmmo = 100;
 const GLint enemyAmmo = 1;
-GLboolean enemyStopMoving = false;
+
+EnemyStatus enemyStatus = SHOOTING_AND_MOVING;
 
 // Impressao na tela
 void * font = GLUT_BITMAP_9_BY_15;
@@ -396,16 +401,31 @@ void display (void) {
     glLoadIdentity();
 
         if(gameOver == true) {
-        string text {"Game Over! press r to restart"};
         GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
-        PrintOnScreen(xOff + ViewingWidth/4, cameraY + ViewingHeight/2, text);
+        PrintText(0.4, 0.5, "Game Over!", 0,1,0);
+        PrintText(0.3, 0.3, "Press R to restart!!", 0,1,0);
     } else if (gameWin == true) {
-        string text {"You win! press r to restart"};
 
         GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
-        PrintOnScreen(xOff + ViewingWidth/3, cameraY + ViewingHeight/2, "Congratulations!");
-        PrintOnScreen(xOff + ViewingWidth/4, cameraY + ViewingHeight/3, text);
+         PrintText(0.4, 0.5, "Congratulations!", 0,1,0);
+         PrintText(0.3, 0.5, "Press r to play again!!", 0,1,0);
+        // PrintOnScreen(xOff + ViewingWidth/3, cameraY + ViewingHeight/2, "Congratulations!");
+        // PrintOnScreen(xOff + ViewingWidth/4, cameraY + ViewingHeight/3, text);
     } else {
+        switch (enemyStatus) {
+            case MOVING:
+                PrintText(0.7, 0.1, "Anda", 0,1,0);
+                break;
+            case SHOOTING_AND_MOVING:
+                PrintText(0.7, 0.1, "Atira e Anda", 0,1,0);
+                break;
+            case SHOOTING:
+                PrintText(0.7, 0.1, "Atira", 0,1,0);
+                break;
+            case STOP:
+                PrintText(0.7, 0.1, "Stop", 0,1,0);
+                break;
+        }
         if (toggleCam == 0){
             eyeCamera();
         } else if (toggleCam == 1){
@@ -575,7 +595,7 @@ void idle()
     map->MoveShots(timeDifference);
 
     // <--- Movimento dos inimigos --->
-    map->ExecuteEnemiesActions(timeDifference, player, enemyStopMoving);
+    map->ExecuteEnemiesActions(timeDifference, player, enemyStatus);
     GLdouble enemyTimeDiff = currentTime - changeActionActualTime;
     if(enemyTimeDiff >= 1 * 1000) { // Muda a cada 1 segundo
         map->ChangeEnemiesActions();
@@ -695,6 +715,31 @@ void keyboard(unsigned char key, int x, int y)
             keyStatus[(int)('x')] = 1;
             lastX = x;
             lastY = y;
+            break;
+        case 'p':
+            enemyStatus = STOP;
+            break;
+        case '4':
+            switch (enemyStatus) {
+                case STOP:
+                    enemyStatus = MOVING;
+                    break;
+                case MOVING:
+                    enemyStatus = SHOOTING;
+                    break;
+                case SHOOTING:
+                    enemyStatus = SHOOTING_AND_MOVING;
+                    break;
+                case SHOOTING_AND_MOVING:
+                    enemyStatus = STOP;
+                    break;
+            }
+            break;
+        case '5':
+            enemyStatus = MOVING;
+            break;
+        case '6':
+            enemyStatus = SHOOTING_AND_MOVING;
             break;
         case SPACEBAR:
             keyStatus[SPACEBAR] = 1;

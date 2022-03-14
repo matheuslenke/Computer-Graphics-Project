@@ -70,22 +70,21 @@ void Enemy::MoveInY(GLdouble timeDiff, Map* map, Character* player) {
     }
 }
 
-Shot* Enemy::DoAction(GLfloat timeDiff, Map* map, Character* player, GLboolean stopMoving) {
+Shot* Enemy::DoAction(GLfloat timeDiff, Map* map, Character* player, EnemyStatus enemyStatus) {
     Shot* aux = nullptr;
     int action = this->actingPattern[actualAction];
     this->MoveInY(timeDiff, map, player);
-    if (action == 0 && !stopMoving) {
+    if (action == 2 || enemyStatus == STOP) {
+        this->StartStanding();
+    }
+    else if (action == 0 && (enemyStatus == SHOOTING_AND_MOVING || enemyStatus == MOVING)) {
         this->MoveInX(timeDiff, map, player);
-    } else if (action == 1) {
+    } else if (action == 1 && (enemyStatus == SHOOTING || enemyStatus == SHOOTING_AND_MOVING)) {
         aux = this->Shoot();
         if (aux) {
             vec3 shotPos = aux->GetPos();
         }
-
-    } else if (action == 2) {
-        this->StartStanding();
     }
-
     return aux;
 }
 
@@ -131,10 +130,7 @@ GLboolean Enemy::CollidesRightWithCharacter(Character* character) {
             float theta = (2.0f * M_PI) * float(j) / float(nPartitions);//get the current angle
             GLdouble actualX = this->gX + (this->bodyWidth/2) * cosf(theta);
             GLdouble actualZ = this->gZ + (this->bodyWidth/2) * sinf(theta);
-            if (character->CollidesWithPoint(actualX, this->gY + i*totalHeight, actualZ) == true
-                // ||
-                // map->CollidesWithEnemy(this->gX + this->bodyWidth/2 + inc, this->gY + i*totalHeight) == true
-            ) {
+            if (character->CollidesWithPoint(actualX, this->gY + i*totalHeight, actualZ) == true) {
                 return true;
             }
         }
@@ -149,10 +145,7 @@ GLboolean Enemy::CollidesLeftWithCharacter(Character* character) {
             float theta = (2.0f * M_PI) * float(j) / float(nPartitions);//get the current angle
             GLdouble actualX = this->gX + (this->bodyWidth/2) * cosf(theta);
             GLdouble actualZ = this->gZ + (this->bodyWidth/2) * sinf(theta);
-            if (character->CollidesWithPoint(actualX, this->gY + i*totalHeight, actualZ) == true
-                // ||
-                // map->CollidesWithEnemy(this->gX + this->bodyWidth/2 + inc, this->gY + i*totalHeight) == true
-            ) {
+            if (character->CollidesWithPoint(actualX, this->gY + i*totalHeight, actualZ) == true) {
                 return true;
             }
         }
@@ -161,17 +154,25 @@ GLboolean Enemy::CollidesLeftWithCharacter(Character* character) {
 }
 
 void Enemy::AdjustArms(vec3 playerPosition) {
-    int increment = 1;
-    if(this->gZ < playerPosition.z) {
-        this->MoveArmsAngle(0,0,increment);
-    } else {  
-        this->MoveArmsAngle(0,0,increment);
-    }
-    if (this->gY < playerPosition.y) {
-        this->MoveArmsAngle(0, increment, 0);
+    GLdouble angleXZ = atan2(abs((this->gY-0.5*totalHeight)-(playerPosition.y)), abs(this->gX-playerPosition.x))*180/M_PI;
+    GLdouble angleXY = atan2(this->gZ-(playerPosition.z + bodyWidth/2), this->gX-playerPosition.x)*180/M_PI;
+    if(this->lookingAngle >= 0 && this->lookingAngle < 180 ) {
+        if (angleXY > 0) {
+            angleXY = angleXY - 180;
+        } else {
+            angleXY = angleXY + 180;
+        }
+        if (angleXY > -45 && angleXY < 45) {
+            this->armThetaXY = -angleXY;
+        }
     } else {
-        this->MoveArmsAngle(0, increment, 0);
+        if (angleXY > -45 && angleXY < 45) {
+            this->armThetaXY = -angleXY;
+        }
     }
+        if (angleXZ > -45 && angleXZ < 45) {
+            this->armThetaXZ = angleXZ;
+        }
 }
 
 void Enemy::NextAction() {

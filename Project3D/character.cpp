@@ -314,15 +314,15 @@ void Character::StartJumping() {
     this->isJumping = true;
     this->jumpingGround = GetCharacterGroundY();
     if(isFacingForward) {
-        this->leg1Theta1 = 40;
-        this->leg1Theta2 = -100;
-        this->leg2Theta1 = 45;
-        this->leg2Theta2 = -100;
+        // this->leg1Theta1 = 40;
+        // this->leg1Theta2 = -100;
+        // this->leg2Theta1 = 45;
+        // this->leg2Theta2 = -100;
     } else {
-        this->leg1Theta1 = -40;
-        this->leg1Theta2 = 100;
-        this->leg2Theta1 = -45;
-        this->leg2Theta2 = 100;
+        // this->leg1Theta1 = -40;
+        // this->leg1Theta2 = 100;
+        // this->leg2Theta1 = -45;
+        // this->leg2Theta2 = 100;
     }
 }
 
@@ -423,14 +423,12 @@ void Character::MoveArmsAngle(GLdouble x, GLdouble y, GLdouble z) {
     // cout << this->gX << " : " << x << endl;
     GLdouble thetaXZ = this->armThetaXZ + (y * (-0.2));
     GLdouble thetaXY = this->armThetaXY + (x * (-0.2));
-    if (this->isFacingForward) {
-        if (thetaXZ < 45 && thetaXZ > -45 ) {
-            this->armThetaXZ += (y * (-0.2));
-        }
-        if(thetaXY < 45 && thetaXY > -45) {
-            // cout << "Arms angle: " << this->armThetaXY << endl;
-            this->armThetaXY += (x * (-0.2));
-        }
+    if (thetaXZ < 45 && thetaXZ > -45 ) {
+        this->armThetaXZ += (y * (-0.2));
+    }
+    if(thetaXY < 45 && thetaXY > -45) {
+        // cout << "Arms angle: " << this->armThetaXY << endl;
+        this->armThetaXY += (x * (-0.2));
     }
 }
 

@@ -36,6 +36,7 @@ protected:
 public:
     Enemy(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor, vec3 shootColor, GLint ammo) : Character(x, y, totalHeight, groundLimit, bodyColor, shootColor, ammo) {
         actualAction = 0;
+        this->armThetaXY = 45;
     }
     void DrawEnemy() {
         Character::Draw();
@@ -44,7 +45,7 @@ public:
     void MoveInX(GLdouble timeDiff, Map* map, Character* player);
     void InsertAction(int action);
     void NextAction();
-    Shot* DoAction(GLfloat timeDiff, Map* map, Character* player, GLboolean stopMoving);
+    Shot* DoAction(GLfloat timeDiff, Map* map, Character* player, EnemyStatus enemyStatus);
     void AdjustArms(vec3 playerPosition);
 };
 

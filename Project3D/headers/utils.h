@@ -23,5 +23,11 @@ struct vec2 {
 	vec2(GLdouble x_, GLdouble y_) :x(x_), y(y_) {}
 };
 
+enum EnemyStatus {
+    SHOOTING_AND_MOVING,
+    SHOOTING,
+    MOVING,
+    STOP,
+};
 
 #endif

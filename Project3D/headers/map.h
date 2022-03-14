@@ -60,7 +60,7 @@ public:
         return this->sizeZ;
     }
     void AddEnemy(Enemy* e);
-    void ExecuteEnemiesActions(GLdouble timeDifference, Character* player, GLboolean stopMoving);
+    void ExecuteEnemiesActions(GLdouble timeDifference, Character* player, EnemyStatus enemyStatus);
     void ChangeEnemiesActions();
     void RechargeEnemies();
     void DrawShots();
