@@ -375,18 +375,19 @@ void eyeCamera() {
     vec3 direction = player->GetDirectionVector();
     double dir[3] = {player->GetgX() + direction.x, player->GetgY() + player->GetTotalHeight() * 0.45 + direction.y, player->GetgZ() - direction.z};
     PrintText(0.1, 0.1, "Eye Camera", 0,1,0);
-    changeCamera(camAngle, ViewingWidth, ViewingHeight);
+    changeCamera(camAngle+15, ViewingWidth, ViewingHeight);
     gluLookAt(player->GetgX(), player->GetgY() + player->GetTotalHeight() * 0.45, player->GetgZ(),
     dir[0], dir[1], dir[2], 0, 1, 0);
 }
 
 void aimingCamera() {
     vec3 direction = player->GetDirectionVector();
-    double dir[3] = {player->GetgX() + direction.x, player->GetgY() + player->GetTotalHeight() * 0.45 + direction.y, player->GetgZ() - direction.z};
-    PrintText(0.1, 0.1, "Eye Camera", 0,1,0);
-    changeCamera(camAngle, ViewingWidth, ViewingHeight);
-    gluLookAt(player->GetgX(), player->GetgY() + player->GetTotalHeight() * 0.45, player->GetgZ(),
-    dir[0], dir[1], dir[2], 0, 1, 0);
+    vec3 armPosition = player->GetInitialAimPosition();
+    vec3 armFinalPosition = player->GetFinalAimPosition();
+    PrintText(0.1, 0.1, "Aiming Camera", 0,1,0);
+    changeCamera(camAngle+30, ViewingWidth, ViewingHeight);
+    gluLookAt(armPosition.x - player->GetBodyWidth()/2, armPosition.y + 0.2 * player->GetTotalHeight(), armPosition.z,
+    armFinalPosition.x, player->GetgY() + 0.5 * player->GetTotalHeight(), armFinalPosition.z, 0, 1, 0);
 }
 
 void display (void) {

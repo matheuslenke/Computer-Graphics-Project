@@ -530,11 +530,35 @@ Shot* Character::Shoot() {
         normalize(shotDirection);
         // shotDirection.y = sinf((90- tThetaXZ) * M_PI/180);
         // cout << "Shot Direction: " << shotDirection.x << "," << shotDirection.y << "," << shotDirection.z << endl;
-        Shot* shot = new Shot(tX, tY, tZ, shotDirection, armWidth * 0.6, this->speed, this->shootColor);
+        Shot* shot = new Shot(tX, tY, tZ, shotDirection, armWidth * 0.6, 2*this->speed, this->shootColor);
         return shot;
 
     }
     return nullptr;
+}
+
+vec3 Character::GetInitialAimPosition() {
+    vec3 initialArmPoint;
+    GLdouble inicX = this->gX;
+    GLdouble inicY = this->gY + 0.3 * totalHeight + armWidth;
+    GLdouble inicZ = this->gZ;
+    inicX += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(this->lookingAngle+this->armThetaXY));
+    inicZ += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(90+this->lookingAngle+this->armThetaXY));
+    return vec3(inicX, inicY, inicZ);
+}
+
+vec3 Character::GetFinalAimPosition() {
+    vec3 initialArmPoint;
+    GLdouble inicX = this->gX;
+    GLdouble inicY = this->gY + 0.3 * totalHeight + armWidth;
+    GLdouble inicZ = this->gZ;
+    GLdouble tX, tY, tZ;
+    inicX += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(this->lookingAngle+this->armThetaXY));
+    tX = inicX + (this->armHeight)*(cos(angleToRadians(this->lookingAngle+this->armThetaXY)));
+    tY = inicY + this->armHeight*(sin(angleToRadians(this->armThetaXZ)));
+    inicZ += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(90+this->lookingAngle+this->armThetaXY));
+    tZ = inicZ + armHeight*(cos(angleToRadians(90+this->lookingAngle+this->armThetaXY)));
+    return vec3(tX, tY, tZ);
 }
 
 void Character::RechargeShot() {

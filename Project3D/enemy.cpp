@@ -56,7 +56,6 @@ void Enemy::MoveInY(GLdouble timeDiff, Map* map, Character* player) {
     this->gY -= inc;
 
     if (CollidesDownWithAPlatform(map)) {
-        cout << "Achou chão!" << endl;
         foundGround = true;
         this->groundLimit = Character::GetCharacterGroundY() + inc;
         vec2* positionX = map->GetPlatformLimitsAtPoint(this->gX - this->bodyWidth/2, this->gY - 0.55*totalHeight - inc);

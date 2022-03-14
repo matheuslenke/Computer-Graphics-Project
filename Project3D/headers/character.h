@@ -138,6 +138,8 @@ public:
     GLdouble GetBodyWidth();
     GLdouble GetBodyHeight();
     GLdouble GetTotalHeight();
+    vec3 GetInitialAimPosition();
+    vec3 GetFinalAimPosition();
     void MoveArmsAngle(GLdouble x, GLdouble y, GLdouble z);
     Shot* Shoot();
     void RechargeShot();
