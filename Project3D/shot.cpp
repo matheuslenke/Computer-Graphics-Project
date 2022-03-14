@@ -35,7 +35,7 @@ void Shot::Move(GLdouble timeDifference)
 {
     GLdouble incx = this->gVel * timeDifference * this->directionVector.x;
     GLdouble incy = this->gVel * timeDifference * this->directionVector.y;
-    GLdouble incz = -this->gVel * timeDifference * this->directionVector.z;
+    GLdouble incz = this->gVel * timeDifference * this->directionVector.z;
     // cout << "Shot direction vector: " << incx << "," << incy << "," << incz << endl;
     gX += incx;
     gZ += incz;

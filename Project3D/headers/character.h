@@ -105,7 +105,7 @@ public:
         this->bodyColor = bodyColor;
         isShooting = false;
         ammo = totalAmmo;
-        this->totalAmmo = 100;
+        this->totalAmmo = totalAmmo;
         this->shootColor = shootColor;
         lookingAngle = 0;
         directionVector = {0.0, 0.0, 0.0};
@@ -130,6 +130,9 @@ public:
     GLdouble GetgZ() {
         return this->gZ;
     }
+    vec3 GetDirectionVector() {
+        return this->directionVector;
+    }
     GLdouble GetCharacterGroundY();
     GLdouble GetCharacterHighestY();
     GLdouble GetBodyWidth();
@@ -142,6 +145,7 @@ public:
     bool CollidesWithEndOfMap(Map* map);
     void TurnRight(GLdouble timeDiff);
     void TurnLeft(GLdouble timeDiff);
+    void CalculateDirectionVector();
 };
 
 #endif	/* CHARACTER_H */

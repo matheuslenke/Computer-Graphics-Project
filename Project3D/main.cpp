@@ -57,7 +57,7 @@ int lastAimX = 0;
 // Parametros de ação dos inimigos
 GLfloat changeActionActualTime = 0;
 const GLfloat timeToChangeAction = 2; // Tempo em segundos
-const GLint playerAmmo = 3;
+const GLint playerAmmo = 100;
 const GLint enemyAmmo = 1;
 GLboolean enemyStopMoving = false;
 
@@ -137,7 +137,7 @@ void readXMLFile(string filename) {
                 random = rand() % 2;
                 enemy->InsertAction(random);
             }
-            // enemies.push_back(enemy);
+            enemies.push_back(enemy);
         }
     }
     for (Enemy* enemy : enemies) {
@@ -350,14 +350,33 @@ void normalize(float a[3])
     a[2] /= norm;
 }
 
+void changeCamera(int angle, int w, int h)
+{
+    glMatrixMode (GL_PROJECTION);
+
+    glLoadIdentity();
+
+    gluPerspective (angle, 
+            (GLfloat)w / (GLfloat)h, 1, map->GetSizeX());
+
+    glMatrixMode (GL_MODELVIEW);
+}
+
+void reshape (int w, int h) {
+
+    ViewingWidth = w;
+    ViewingHeight = h;
+    glViewport (0, 0, (GLsizei)w, (GLsizei)h);
+
+    changeCamera(camAngle, w, h);
+}
+
 void eyeCamera() {
-    GLfloat increment = player->GetTotalHeight();
-    // if (player->getIsDirectionToRight() == false) {
-    //     increment = -increment;
-    // } 
-    double dir[3] = {player->GetgX() + increment, player->GetgY() + player->GetTotalHeight() * 0.45, player->GetgZ()};
+    vec3 direction = player->GetDirectionVector();
+    double dir[3] = {player->GetgX() + direction.x, player->GetgY() + player->GetTotalHeight() * 0.45 + direction.y, player->GetgZ() - direction.z};
     PrintText(0.1, 0.1, "Eye Camera", 0,1,0);
-    gluLookAt(player->GetgX() + player->GetBodyWidth(), player->GetgY() + player->GetTotalHeight() * 0.45, player->GetgZ(),
+    changeCamera(camAngle, ViewingWidth, ViewingHeight);
+    gluLookAt(player->GetgX(), player->GetgY() + player->GetTotalHeight() * 0.45, player->GetgZ(),
     dir[0], dir[1], dir[2], 0, 1, 0);
 }
 
@@ -423,24 +442,6 @@ void init (void) {
     glEnable(GL_LIGHT0);
 }
 
-void changeCamera(int angle, int w, int h)
-{
-    glMatrixMode (GL_PROJECTION);
-
-    glLoadIdentity ();
-
-    gluPerspective (angle, 
-            (GLfloat)w / (GLfloat)h, 1, map->GetSizeX());
-
-    glMatrixMode (GL_MODELVIEW);
-}
-
-void reshape (int w, int h) {
-
-    glViewport (0, 0, (GLsizei)w, (GLsizei)h);
-
-    changeCamera(camAngle, w, h);
-}
 
 void mouse_callback(int button, int state, int x, int y) 
 {

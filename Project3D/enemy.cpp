@@ -6,54 +6,36 @@ void Enemy::MoveInX(GLdouble timeDiff, Map* map, Character* player) {
   GLfloat inc = this->speed * timeDiff;
   if(foundGround && isOnPlatform) {
     if(this->gX <= this->minWalkingX) {
-        this->isFacingForward = true;
+        this->lookingAngle = 180;
+        this->CalculateDirectionVector();
     } else if (this->gX >= this->maxWalkingX) {
-        this->isFacingForward = false;
+        this->lookingAngle = 0;
+        this->CalculateDirectionVector();
     }
   }
 
-  if (isFacingForward) {
-        this->gX += inc;
-        if(CollidesRightWithCharacter(player) == true ){
-            this->gX -= inc;
-            Character::StartStanding();
-            return;
-        }
-        else if (Enemy::CollidesHorizontallyWithAPlatform(map) == true ) {
-            this->isFacingForward = false;
-            Character::StartMoving(false);
-            this->gX -= inc;
-            return;
-        }
-        if (this->isJumping) { return; }
-        Character::AnimateLegs();
-    } else {
-        this->gX -= inc;
-        if(CollidesLeftWithCharacter(player) == true ){
-            this->gX += inc;
-            Character::StartStanding();
-            return;
-        }
-        if (CollidesHorizontallyWithAPlatform(map) == true) {
-            this->gX += inc;
-            this->isFacingForward = true;
-            Character::StartMoving(true);
-            return;
-        }
-        if (this->isJumping) { return; }
-        Character::AnimateLegs();
-    }
-
-    if(CollidesUpWithCharacter(player) || CollidesDownWithCharacter(player)) {
-        this->gX -= inc;
+    this->gX += inc * this->directionVector.x;
+    if(CollidesRightWithCharacter(player) == true ){
+        this->gX -= inc * this->directionVector.x;
         Character::StartStanding();
         return;
     }
-    if (Enemy::CollidesHorizontallyWithAPlatform(map)) {
-        this->gX -= inc;
-        this->isFacingForward = false;
-    } else if (CollidesHorizontallyWithAPlatform(map)) {
-        this->isFacingForward = true;
+    else if (Enemy::CollidesHorizontallyWithAPlatform(map) == true ) {
+        this->gX -= inc * this->directionVector.x;
+        this->lookingAngle += 180;
+        if(this->lookingAngle >= 360) {
+            this->lookingAngle = 0;
+        }
+        this->CalculateDirectionVector();
+        Character::StartMoving(false);
+        return;
+    }
+    if (this->isJumping) { return; }
+    Character::AnimateLegs();
+
+    if(CollidesUpWithCharacter(player) || CollidesDownWithCharacter(player)) {
+        Character::StartStanding();
+        return;
     }
 }
 
@@ -65,9 +47,10 @@ void Enemy::MoveInY(GLdouble timeDiff, Map* map, Character* player) {
     this->gY -= inc;
 
     if (CollidesDownWithAPlatform(map)) {
+        cout << "Achou chão!" << endl;
         foundGround = true;
         this->groundLimit = Character::GetCharacterGroundY();
-        vec2* positionX = map->GetPlatformLimitsAtPoint(this->gX - this->bodyWidth/2, this->gY - 0.6*totalHeight - inc);
+        vec2* positionX = map->GetPlatformLimitsAtPoint(this->gX - this->bodyWidth/2, this->gY - 0.51*totalHeight - inc);
         if (positionX != nullptr) {
             this->minWalkingX = positionX->x;
             this->maxWalkingX = positionX->y;
@@ -169,8 +152,18 @@ GLboolean Enemy::CollidesLeftWithCharacter(Character* character) {
     return false;
 }
 
-void Enemy::AdjustArms(vec2 playerPosition) {
-    this->MoveArmsAngle(playerPosition.x, playerPosition.y, 0);
+void Enemy::AdjustArms(vec3 playerPosition) {
+    int increment = 1;
+    if(this->gZ < playerPosition.z) {
+        this->MoveArmsAngle(0,0,increment);
+    } else {  
+        this->MoveArmsAngle(0,0,increment);
+    }
+    if (this->gY < playerPosition.y) {
+        this->MoveArmsAngle(0, increment, 0);
+    } else {
+        this->MoveArmsAngle(0, increment, 0);
+    }
 }
 
 void Enemy::NextAction() {

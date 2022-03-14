@@ -298,13 +298,11 @@ void Character::StartMoving(bool isToForward) {
         // }
     }
     else if (isToForward) {
-        // this->isFacingForward = true;
         leg1Theta1 = 30;
         leg2Theta1 = -30;
         da = -legMovingSpeed;
         da2 = legMovingSpeed;
     } else {
-        // this->isFacingForward = false;
         leg1Theta1 = -30;
         leg2Theta1 = 30;
         da = legMovingSpeed;
@@ -398,6 +396,7 @@ void Character::MoveInY(GLdouble timeDiff, bool isPressingJumpButton, Map* map) 
             hasJumpedToMax = true;
         } 
         if(CollidesDownWithAPlatform(map)) {
+            this->gY += inc;
             isJumping = false; 
             hasJumpedToMax = false;
             this->leg1Theta1 = 0;
@@ -444,10 +443,14 @@ void Character::TurnRight(GLdouble timeDiff) {
     }
 
     this->lookingAngle -= timeDiff * turningSpeed;
-    this->directionVector.x = cos((this->lookingAngle) * M_PI/180 );
-    this->directionVector.z = sin(this->lookingAngle * M_PI/180);
+    this->CalculateDirectionVector();
     // cout << "Direction Vector: " << this->directionVector.x << " , " << this->directionVector.z << endl;
     // cout << "Looking Angle: " << this->lookingAngle << endl;
+}
+
+void Character::CalculateDirectionVector() {
+    this->directionVector.x = cos(angleToRadians(this->lookingAngle));
+    this->directionVector.z = sin(angleToRadians(this->lookingAngle));
 }
 
 void Character::TurnLeft(GLdouble timeDiff) {
@@ -459,8 +462,7 @@ void Character::TurnLeft(GLdouble timeDiff) {
         this->lookingAngle = 0;
     }
     this->lookingAngle += timeDiff * turningSpeed;
-    this->directionVector.x = cos((this->lookingAngle)  * M_PI/180);
-    this->directionVector.z = sin(this->lookingAngle * M_PI/180);
+    this->CalculateDirectionVector();
     // cout << "Direction Vector: " << this->directionVector.x << " , " << this->directionVector.z << endl;
     // cout << "Looking Angle: " << this->lookingAngle << endl;
 }
@@ -492,46 +494,45 @@ Shot* Character::Shoot() {
         vec3 finalArmPoint;
         initialArmPoint.x = this->gX;
         initialArmPoint.y = this->gY + 0.3 * totalHeight;
-        initialArmPoint.z = this->gZ + bodyWidth/2 + armWidth/2;
+        initialArmPoint.z = this->gZ;
         GLdouble tX = this->gX,
         tY = initialArmPoint.y,
         tZ = initialArmPoint.z,
         tThetaXZ = 90 + this->armThetaXZ,
         tThetaXY = this->armThetaXY;
-        cout << "lookingAngle: " << this->lookingAngle<< endl;
+        // cout << "lookingAngle: " << this->lookingAngle<< endl;
 
         GLdouble inicX = tX;
         GLdouble inicY = tY;
         GLdouble inicZ = tZ;
         GLdouble lixo;
+        // cout << "Posição inicial player: " << inicX << "," << inicZ << endl;
 
         if (isFacingForward) {
-            // Tentativa 102401204
-            tX = inicX + this->armHeight*(cos(-this->lookingAngle*M_PI/180)+cos(90+this->armThetaXZ*M_PI/180));
-            tY = inicY + this->armHeight*(sin(this->armThetaXZ*M_PI/180));
-            tZ = inicZ + this->armHeight*(sin(this->lookingAngle*M_PI/180)+sin(this->armThetaXY*M_PI/180));
+            inicX += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(this->lookingAngle+this->armThetaXY));
+            tX = inicX + (this->armHeight)*(cos(angleToRadians(this->lookingAngle+this->armThetaXY)));
+            tY = inicY + this->armHeight*(sin(angleToRadians(this->armThetaXZ)));
+            inicZ += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(90+this->lookingAngle+this->armThetaXY));
+            tZ = inicZ + armHeight*(cos(angleToRadians(90+this->lookingAngle+this->armThetaXY)));
 
-            // lemque
-            // RotatePointUtil(inicX, inicY, this->armHeight , this->armThetaXZ, tX, tY);
-            // RotatePointUtil(inicX, inicZ, -this->armHeight , tThetaXY, lixo, tZ);
-            // cipri
-            // pRotatef(this->armThetaXY, tX, tZ, inicX, inicZ);
-            // RotatePointUtil3D(tX, tY, tZ, this->armHeight, this->armThetaXZ, this->armThetaXY, tX, tY, tZ);
-            
-            // RotatePointUtil(tX, tY, this->armHeight , this->armThetaXZ, tX, tY);
+            // cout << "z: " << inicZ << " tZ: " << tZ << endl;
+            // cout << "x: " << inicX << " tX: " << tX << endl;
         } else {
+            inicX += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(this->lookingAngle));
+            tX = inicX + (this->armHeight)*(cos(angleToRadians(this->lookingAngle)));
+            tY = inicY + this->armHeight*(sin(angleToRadians(this->armThetaXZ)));
+            inicZ += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(90+this->lookingAngle));
+            tZ = inicZ + armHeight*(cos(angleToRadians(90+this->lookingAngle)));
             // RotatePointUtil(tX, tY, this->armHeight , tThetaXZ, tX, tY);
         }
         this->ammo -= 1;
-        vec3 shotDirection = {tX-initialArmPoint.x, tY-initialArmPoint.y, tZ - initialArmPoint.z};
-        if (!isFacingForward) {
-            shotDirection.x = -shotDirection.x;
-        }
+        vec3 shotDirection = {tX - inicX, tY - inicY, tZ - inicZ};
         normalize(shotDirection);
         // shotDirection.y = sinf((90- tThetaXZ) * M_PI/180);
-        // cout << "Shot position: " << shotDirection.x << "," << shotDirection.y << "," << shotDirection.z << endl;
+        // cout << "Shot Direction: " << shotDirection.x << "," << shotDirection.y << "," << shotDirection.z << endl;
         Shot* shot = new Shot(tX, tY, tZ, shotDirection, armWidth * 0.6, this->speed, this->shootColor);
         return shot;
+
     }
     return nullptr;
 }
@@ -543,7 +544,7 @@ void Character::RechargeShot() {
 }
 
 bool Character::CollidesDownWithAPlatform(Map* map) {
-    if (GetCharacterGroundY() - 0.1 * this->GetTotalHeight() <= this->groundLimit) {
+    if (GetCharacterGroundY() - 0.05 * this->GetTotalHeight() <= this->groundLimit) {
         return true;
     }
     int nPartitions = 72;
@@ -551,9 +552,9 @@ bool Character::CollidesDownWithAPlatform(Map* map) {
         float theta = 2.0f * M_PI * float(j) / float(nPartitions);//get the current angle
             GLdouble actualX = this->gX + (this->bodyWidth/2) * cosf(theta);
             GLdouble actualZ = this->gZ +(this->bodyWidth/2) * sinf(theta);
-        if (map->ColidesWithAPlatform(actualX, this->gY - 0.6*totalHeight, actualZ) == true
+        if (map->ColidesWithAPlatform(actualX, this->gY - 0.5*totalHeight, actualZ) == true
             ||
-            map->CollidesWithEnemy(actualX, this->gY - 0.6*totalHeight, actualZ) == true
+            map->CollidesWithEnemy(actualX, this->gY - 0.5*totalHeight, actualZ) == true
             ) {
             return true;
         }
@@ -636,11 +637,11 @@ GLdouble Character::GetgY() {
 }
 
 GLdouble Character::GetCharacterGroundY() {
-    return this->gY - 0.51* this->totalHeight;
+    return this->gY - 0.5* this->totalHeight;
 }
 
 GLdouble Character::GetCharacterHighestY() {
-    return this->gY + 0.51* this->totalHeight;
+    return this->gY + 0.5* this->totalHeight;
 }
 
 GLdouble Character::GetBodyWidth() {

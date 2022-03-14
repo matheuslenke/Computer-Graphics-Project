@@ -45,7 +45,7 @@ public:
     void InsertAction(int action);
     void NextAction();
     Shot* DoAction(GLfloat timeDiff, Map* map, Character* player, GLboolean stopMoving);
-    void AdjustArms(vec2 playerPosition);
+    void AdjustArms(vec3 playerPosition);
 };
 
 #endif	/* ENEMY_H */
