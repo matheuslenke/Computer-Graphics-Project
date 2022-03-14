@@ -4,17 +4,26 @@ using namespace std;
 
 void Enemy::MoveInX(GLdouble timeDiff, Map* map, Character* player) {
   GLfloat inc = this->speed * timeDiff;
+  this->gX += inc * this->directionVector.x;
   if(foundGround && isOnPlatform) {
     if(this->gX <= this->minWalkingX) {
-        this->lookingAngle = 180;
+        this->gX -= inc * this->directionVector.x;
+        this->lookingAngle += 180;
+        if(this->lookingAngle >= 360) {
+            this->lookingAngle = 0;
+        }
         this->CalculateDirectionVector();
     } else if (this->gX >= this->maxWalkingX) {
-        this->lookingAngle = 0;
+        this->gX -= inc * this->directionVector.x;
+        this->lookingAngle += 180;
+        if(this->lookingAngle >= 360) {
+            this->lookingAngle = 0;
+        }
         this->CalculateDirectionVector();
+        return;
     }
   }
 
-    this->gX += inc * this->directionVector.x;
     if(CollidesRightWithCharacter(player) == true ){
         this->gX -= inc * this->directionVector.x;
         Character::StartStanding();
@@ -49,15 +58,15 @@ void Enemy::MoveInY(GLdouble timeDiff, Map* map, Character* player) {
     if (CollidesDownWithAPlatform(map)) {
         cout << "Achou chão!" << endl;
         foundGround = true;
-        this->groundLimit = Character::GetCharacterGroundY();
-        vec2* positionX = map->GetPlatformLimitsAtPoint(this->gX - this->bodyWidth/2, this->gY - 0.51*totalHeight - inc);
+        this->groundLimit = Character::GetCharacterGroundY() + inc;
+        vec2* positionX = map->GetPlatformLimitsAtPoint(this->gX - this->bodyWidth/2, this->gY - 0.55*totalHeight - inc);
         if (positionX != nullptr) {
             this->minWalkingX = positionX->x;
             this->maxWalkingX = positionX->y;
+            // cout << "Em plataforma com limites: " << minWalkingX << "," << maxWalkingX  << endl;
             isOnPlatform = true;
         }
         isJumping = false;
-        this->gY += inc;
         return;
     }
 }

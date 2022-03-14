@@ -552,9 +552,9 @@ bool Character::CollidesDownWithAPlatform(Map* map) {
         float theta = 2.0f * M_PI * float(j) / float(nPartitions);//get the current angle
             GLdouble actualX = this->gX + (this->bodyWidth/2) * cosf(theta);
             GLdouble actualZ = this->gZ +(this->bodyWidth/2) * sinf(theta);
-        if (map->ColidesWithAPlatform(actualX, this->gY - 0.5*totalHeight, actualZ) == true
+        if (map->ColidesWithAPlatform(actualX, this->gY - 0.51*totalHeight, actualZ) == true
             ||
-            map->CollidesWithEnemy(actualX, this->gY - 0.5*totalHeight, actualZ) == true
+            map->CollidesWithEnemy(actualX, this->gY - 0.51*totalHeight, actualZ) == true
             ) {
             return true;
         }
@@ -625,7 +625,7 @@ bool Character::getIsJumping() {
 }
 
 vec3 Character::getPosition() {
-    return vec3(this->gX, this->gY, 0);
+    return vec3(this->gX, this->gY, this->gZ);
 }
 
 GLdouble Character::GetgX() {

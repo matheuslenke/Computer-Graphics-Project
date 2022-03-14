@@ -380,6 +380,15 @@ void eyeCamera() {
     dir[0], dir[1], dir[2], 0, 1, 0);
 }
 
+void aimingCamera() {
+    vec3 direction = player->GetDirectionVector();
+    double dir[3] = {player->GetgX() + direction.x, player->GetgY() + player->GetTotalHeight() * 0.45 + direction.y, player->GetgZ() - direction.z};
+    PrintText(0.1, 0.1, "Eye Camera", 0,1,0);
+    changeCamera(camAngle, ViewingWidth, ViewingHeight);
+    gluLookAt(player->GetgX(), player->GetgY() + player->GetTotalHeight() * 0.45, player->GetgZ(),
+    dir[0], dir[1], dir[2], 0, 1, 0);
+}
+
 void display (void) {
     glClearColor (0.2,0.2,0.2,1.0);
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -399,8 +408,7 @@ void display (void) {
         if (toggleCam == 0){
             eyeCamera();
         } else if (toggleCam == 1){
-            PrintText(0.1, 0.1, "Static Camera at a Distance", 0,1,0);
-            gluLookAt(map->GetgX(),map->GetgY(),50, player->GetgX(),player->GetgY(),0, 0,1,0);
+            aimingCamera();
         } else if (toggleCam == 2){
             PrintText(0.1, 0.1, "Third Person Camera", 0,1,0);
             glTranslatef(0, 0, -camDist);
