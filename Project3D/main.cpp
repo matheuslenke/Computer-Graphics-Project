@@ -390,9 +390,9 @@ void aimingCamera() {
     vec3 armPosition = player->GetInitialAimPosition();
     vec3 armFinalPosition = player->GetFinalAimPosition();
     PrintText(0.1, 0.1, "Aiming Camera", 0,1,0);
-    changeCamera(camAngle+30, ViewingWidth, ViewingHeight);
-    gluLookAt(armPosition.x - player->GetBodyWidth()/2, armPosition.y + 0.2 * player->GetTotalHeight(), armPosition.z,
-    armFinalPosition.x, player->GetgY() + 0.5 * player->GetTotalHeight(), armFinalPosition.z, 0, 1, 0);
+    // changeCamera(camAngle+30, ViewingWidth, ViewingHeight);
+    gluLookAt(armPosition.x, armPosition.y, armPosition.z,
+    armFinalPosition.x, armFinalPosition.y, armFinalPosition.z, 0, 1, 0);
 }
 
 void display (void) {
@@ -620,6 +620,9 @@ void idle()
 
 void keyboard(unsigned char key, int x, int y)
 {
+    if(key == 27){
+        exit(0);
+    }
     if (gameOver || gameWin) { 
         if(key == 'R' || key == 'r') {
             restartGame();
@@ -746,9 +749,6 @@ void keyboard(unsigned char key, int x, int y)
             if(!player->getIsJumping()) {
                 player->StartJumping();
             }
-            break;
-        case 27:
-            exit(0);
             break;
     }
 }

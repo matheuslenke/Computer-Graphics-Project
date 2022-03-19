@@ -36,7 +36,7 @@ protected:
     GLdouble bodyHeight;
     GLdouble bodyWidth;
     GLdouble radiusHead;
-    GLdouble armHeight ;
+    GLdouble armHeight;
     GLdouble armWidth;
     GLdouble leg1Theta1;
     GLdouble leg1Theta2;

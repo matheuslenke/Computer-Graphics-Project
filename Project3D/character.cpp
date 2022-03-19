@@ -1,6 +1,7 @@
 #include "headers/character.h"
 #include <math.h>
 #include <iostream>
+#include "headers/geom_draw.h"
 
 
 double angleToRadians(double angle){
@@ -26,6 +27,7 @@ void pRotatef(double angle, double &xOut, double &yOut, double x0 = 0., double y
   yOut = yNew + y0;
 }
 
+
 /* <-- Seção de Desenhos --> */
 void Character::DrawCharacter(GLdouble x, GLdouble y, GLdouble z)
 {
@@ -41,7 +43,7 @@ void Character::DrawCharacter(GLdouble x, GLdouble y, GLdouble z)
     // Desenha o corpo do personagem
     glPushMatrix();
     glTranslatef(-bodyWidth/2, bodyHeight, 0);
-    DrawRectangle(bodyHeight, bodyWidth, bodyWidth, bodyColor.x, bodyColor.y, bodyColor.z);
+    drawRectangle(bodyHeight, bodyWidth, bodyWidth, bodyColor.x, bodyColor.y, bodyColor.z);
     glPopMatrix();
     // Desenha a cabeça do personagem
     glPushMatrix();
@@ -55,6 +57,17 @@ void Character::DrawCharacter(GLdouble x, GLdouble y, GLdouble z)
 
     // DrawAxes();
     // DrawHitbox();
+    // DEBUG: AIM POSITION
+    vec3 finalAim = GetFinalAimPosition();
+    vec3 initAim = GetInitialAimPosition();  
+    glPushMatrix();
+    glTranslatef(finalAim.x, finalAim.y, finalAim.z);
+    DrawCircle(armWidth/3, 1, 0, 0);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(initAim.x, initAim.y, initAim.z);
+    DrawCircle(armWidth/2, 1, 0, 0);
+    glPopMatrix();
 
     glPopMatrix();
 }
@@ -64,134 +77,52 @@ void Character::DrawLegs() {
     glPushMatrix();
     glTranslatef(-legWidth/2, 0, -bodyWidth/2 + legWidth/2);
     glRotatef(this->leg1Theta1, 0, 0, 1);
-    DrawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+    drawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
 
     glRotatef(this->leg1Theta2, 0, 0, 1);
     glTranslatef(0, -legHeight, 0);
-    DrawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+    drawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
     glPopMatrix();
     
     // Desenhando a perna direita
     glPushMatrix();
     glTranslatef(-legWidth/2, 0, bodyWidth/2 - legWidth/2);
     glRotatef(this->leg2Theta1, 0, 0, 1);
-    DrawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+    drawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
 
     glRotatef(this->leg2Theta2, 0, 0, 1);
     glTranslatef(0, -legHeight, 0);
-    DrawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+    drawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
     glPopMatrix();
 }
 
 void Character::DrawArms() {
     if(!this->isFacingForward) {
         glPushMatrix();
-        glTranslatef(0, 0.3 * totalHeight, -bodyWidth/2 - armWidth/2);
+        glTranslatef(0, 0.3 * totalHeight + armWidth/2, -bodyWidth/2 - armWidth/2);
         glRotatef(0, 0, 0, 1);
-        DrawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+        drawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2,WIDTH_FROM_CENTER);
         glPopMatrix();
         glPushMatrix();
-        glTranslatef(0, 0.3 * totalHeight, bodyWidth/2 + armWidth/2);
+        glTranslatef(0, 0.3 * totalHeight+armWidth/2, bodyWidth/2 + armWidth/2);
         glRotatef(90 -this->armThetaXZ, 0, 0, 1);
         glRotatef(this->armThetaXY, 1,0,0);
-        DrawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+        drawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2,WIDTH_FROM_CENTER);
         glPopMatrix();
     } else {
         glPushMatrix();
-        glTranslatef(0, 0.3 * totalHeight, -bodyWidth/2 - armWidth/2);
+        glTranslatef(0, 0.3 * totalHeight + armWidth/2, -bodyWidth/2 - armWidth/2);
         glRotatef(0, 0, 0, 1);
-        DrawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+        drawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2, WIDTH_FROM_CENTER);
         glPopMatrix();
         glPushMatrix();
-        glTranslatef(0, 0.3 * totalHeight, bodyWidth/2 + armWidth/2);
+        glTranslatef(0, 0.3 * totalHeight+armWidth/2, bodyWidth/2 + armWidth/2);
         glRotatef(90 + this->armThetaXZ, 0, 0, 1);
         glRotatef(this->armThetaXY, 1,0,0);
-        DrawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
+        drawRectangle(armHeight, armWidth, armWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2, WIDTH_FROM_CENTER);
         glPopMatrix();
     }
     glPopMatrix();
-}
-
-void Character::DrawRectangle(GLdouble height, GLdouble width, GLdouble depth, GLfloat R, GLfloat G, GLfloat B) {
-    /* Define cor dos vértices com os valores R, G e B variando de 0.0 a 1.0 */
-    glColor3f (R, G, B);
-
-  glBegin(GL_QUADS);
-        glNormal3f(0,1,0);
-        glVertex3f (0, 0, -depth/2);
-        glNormal3f(0,1,0);
-        glVertex3f (width, 0,-depth/2);
-        glNormal3f(0,1,0);
-        glVertex3f (width , 0, depth/2);
-        glNormal3f(0,1,0);
-        glVertex3f (0, 0, depth/2);
-        glNormal3f(0,1,0);
-        glVertex3f (0, 0, -depth/2);
-    glEnd();
-
-    // Face inferior
-    glBegin(GL_QUADS);
-        glNormal3f(0,-1,0);
-        glVertex3f (0, -height, -depth/2);
-        glNormal3f(0,-1,0);
-        glVertex3f (width, -height,-depth/2);
-        glNormal3f(0,-1,0);
-        glVertex3f (width , -height, depth/2);
-        glNormal3f(0,-1,0);
-        glVertex3f (0, -height, depth/2);
-        glNormal3f(0,-1,0);
-        glVertex3f (0, -height, -depth/2);
-    glEnd();
-
-    // Faces laterais
-    glBegin(GL_QUADS); // 1
-        glNormal3f(-1,0,0);
-        glVertex3f (0, 0, -depth/2);
-        glNormal3f(-1,0,0);
-        glVertex3f (0, -height, -depth/2);
-        glNormal3f(-1,0,0);
-        glVertex3f (0, -height, depth/2);
-        glNormal3f(-1,0,0);
-        glVertex3f (0, 0, depth/2);
-        glNormal3f(-1,0,0);
-        glVertex3f (0, 0, -depth/2);
-    glEnd();
-    glBegin(GL_QUADS); // 2
-        glNormal3f(0,0,1);
-        glVertex3f (0, 0, depth/2);
-        glNormal3f(0,0,1);
-        glVertex3f (0, -height, depth/2);
-        glNormal3f(0,0,1);
-        glVertex3f (width, -height, depth/2);
-        glNormal3f(0,0,1);
-        glVertex3f (width, 0, depth/2);
-        glNormal3f(0,0,1);
-        glVertex3f (0, 0, depth/2);
-    glEnd();
-    glBegin(GL_QUADS); // 3
-        glNormal3f(1,0,0);
-        glVertex3f (width, 0, -depth/2);
-        glNormal3f(1,0,0);
-        glVertex3f (width, -height, -depth/2);
-        glNormal3f(1,0,0);
-        glVertex3f (width, -height, depth/2);
-        glNormal3f(1,0,0);
-        glVertex3f (width, 0, depth/2);
-        glNormal3f(1,0,0);
-        glVertex3f (width, 0, -depth/2);
-    glEnd();
-    glBegin(GL_QUADS); // 4
-        glNormal3f(0,0, -1);
-        glVertex3f (0, 0, -depth/2);
-        glNormal3f(0,0, -1);
-        glVertex3f (width, 0, -depth/2);
-        glNormal3f(0,0, -1);
-        glVertex3f (width, -height, -depth/2);
-        glNormal3f(0,0, -1);
-        glVertex3f (0, -height, -depth/2);
-        glNormal3f(0,0, -1);
-        glVertex3f (0, 0, -depth/2);
-    glEnd();
 }
 
 void Character::DrawCircle(GLdouble radius, GLfloat R, GLfloat G, GLfloat B)
@@ -488,74 +419,46 @@ void normalize(vec3 &a)
 
 Shot* Character::Shoot() {
     if (this->ammo > 0) {
-        vec3 initialArmPoint;
-        vec3 finalArmPoint;
-        initialArmPoint.x = this->gX;
-        initialArmPoint.y = this->gY + 0.3 * totalHeight;
-        initialArmPoint.z = this->gZ;
-        GLdouble tX = this->gX,
-        tY = initialArmPoint.y,
-        tZ = initialArmPoint.z,
-        tThetaXZ = 90 + this->armThetaXZ,
-        tThetaXY = this->armThetaXY;
-        // cout << "lookingAngle: " << this->lookingAngle<< endl;
-
-        GLdouble inicX = tX;
-        GLdouble inicY = tY;
-        GLdouble inicZ = tZ;
-        GLdouble lixo;
-        // cout << "Posição inicial player: " << inicX << "," << inicZ << endl;
-
-        if (isFacingForward) {
-            inicX += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(this->lookingAngle+this->armThetaXY));
-            tX = inicX + (this->armHeight)*(cos(angleToRadians(this->lookingAngle+this->armThetaXY)));
-            tY = inicY + this->armHeight*(sin(angleToRadians(this->armThetaXZ)));
-            inicZ += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(90+this->lookingAngle+this->armThetaXY));
-            tZ = inicZ + armHeight*(cos(angleToRadians(90+this->lookingAngle+this->armThetaXY)));
-
-            // cout << "z: " << inicZ << " tZ: " << tZ << endl;
-            // cout << "x: " << inicX << " tX: " << tX << endl;
-        } else {
-            inicX += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(this->lookingAngle));
-            tX = inicX + (this->armHeight)*(cos(angleToRadians(this->lookingAngle)));
-            tY = inicY + this->armHeight*(sin(angleToRadians(this->armThetaXZ)));
-            inicZ += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(90+this->lookingAngle));
-            tZ = inicZ + armHeight*(cos(angleToRadians(90+this->lookingAngle)));
-            // RotatePointUtil(tX, tY, this->armHeight , tThetaXZ, tX, tY);
-        }
         this->ammo -= 1;
-        vec3 shotDirection = {tX - inicX, tY - inicY, tZ - inicZ};
-        normalize(shotDirection);
-        // shotDirection.y = sinf((90- tThetaXZ) * M_PI/180);
-        // cout << "Shot Direction: " << shotDirection.x << "," << shotDirection.y << "," << shotDirection.z << endl;
-        Shot* shot = new Shot(tX, tY, tZ, shotDirection, armWidth * 0.6, 2*this->speed, this->shootColor);
-        return shot;
 
+        vec3 inicAim = GetInitialAimPosition();
+        vec3 finalAim = GetFinalAimPosition();
+
+        vec3 shotDirection = finalAim-inicAim;
+
+        normalize(shotDirection);
+        // cout << "Shot Direction: " << shotDirection.x << "," << shotDirection.y << "," << shotDirection.z << endl;
+        Shot* shot = new Shot(finalAim.x, finalAim.y, finalAim.z, shotDirection, armWidth * 0.6, 2*this->speed, this->shootColor);
+        return shot;
     }
     return nullptr;
 }
 
 vec3 Character::GetInitialAimPosition() {
     vec3 initialArmPoint;
-    GLdouble inicX = this->gX;
-    GLdouble inicY = this->gY + 0.3 * totalHeight + armWidth;
-    GLdouble inicZ = this->gZ;
-    inicX += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(this->lookingAngle+this->armThetaXY));
-    inicZ += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(90+this->lookingAngle+this->armThetaXY));
+    GLdouble inicX = gX;
+    GLdouble inicY = gY + 0.3 * totalHeight - armWidth/2;
+    GLdouble inicZ = gZ;
+
+    // Move  a mira pro lado (eixo z do boneco)
+    inicX += (this->bodyWidth/2+this->armWidth/2)*sin(angleToRadians(this->lookingAngle));
+    inicZ += (this->bodyWidth/2+this->armWidth/2)*cos(angleToRadians(this->lookingAngle));
+    
     return vec3(inicX, inicY, inicZ);
 }
 
 vec3 Character::GetFinalAimPosition() {
-    vec3 initialArmPoint;
-    GLdouble inicX = this->gX;
-    GLdouble inicY = this->gY + 0.3 * totalHeight + armWidth;
-    GLdouble inicZ = this->gZ;
+    vec3 inic = GetInitialAimPosition();
     GLdouble tX, tY, tZ;
-    inicX += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(this->lookingAngle+this->armThetaXY));
-    tX = inicX + (this->armHeight)*(cos(angleToRadians(this->lookingAngle+this->armThetaXY)));
-    tY = inicY + this->armHeight*(sin(angleToRadians(this->armThetaXZ)));
-    inicZ += (this->bodyWidth/2 + this->armWidth/2)*sin(angleToRadians(90+this->lookingAngle+this->armThetaXY));
-    tZ = inicZ + armHeight*(cos(angleToRadians(90+this->lookingAngle+this->armThetaXY)));
+
+    // tX = inic.x + (armHeight)*(cos(angleToRadians(lookingAngle+armThetaXY))); // equivalentes
+    // tZ = inic.z + (armHeight)*(cos(angleToRadians(90+lookingAngle+armThetaXY))); // equivalentes
+    tX = inic.x + (this->armHeight)*cos(angleToRadians(-this->lookingAngle-armThetaXY)); // equivalentes
+    tZ = inic.z + (this->armHeight)*sin(angleToRadians(-this->lookingAngle-armThetaXY)); // equivalentes
+    tY = inic.y + (armHeight)*(sin(angleToRadians(armThetaXZ)));
+
+    // TODO: AINDA TÁ FALTANDO ALGO PRA FICAR 100%
+
     return vec3(tX, tY, tZ);
 }
 
