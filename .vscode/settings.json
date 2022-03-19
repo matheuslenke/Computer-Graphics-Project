@@ -1,11 +1,17 @@
 {
     "C_Cpp.errorSquiggles": "Disabled",
     "files.associations": {
+        ".sequelizerc": "javascript",
+        ".stylelintrc": "json",
+        ".prettierrc": "json",
+        "*.tsx": "typescriptreact",
         "iostream": "cpp",
         "ostream": "cpp",
         "deque": "cpp",
         "string": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "complex": "cpp",
+        "cmath": "cpp"
     },
     "cmake.additionalKits": [
         "${workspaceFolder}/arenas/arena_teste.svg"

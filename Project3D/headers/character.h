@@ -140,6 +140,8 @@ public:
     GLdouble GetTotalHeight();
     vec3 GetInitialAimPosition();
     vec3 GetFinalAimPosition();
+    vec3 GetInitialShootPosition();
+    vec3 GetFinalShootPosition();
     void MoveArmsAngle(GLdouble x, GLdouble y, GLdouble z);
     Shot* Shoot();
     void RechargeShot();
@@ -148,6 +150,8 @@ public:
     void TurnRight(GLdouble timeDiff);
     void TurnLeft(GLdouble timeDiff);
     void CalculateDirectionVector();
+    GLdouble GetArmWidth();
+
 };
 
 #endif	/* CHARACTER_H */

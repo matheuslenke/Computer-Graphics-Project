@@ -4,12 +4,20 @@
 #include "headers/geom_draw.h"
 
 
-double angleToRadians(double angle){
+double angleToRad(double angle){
   return (angle*M_PI)/180.0;
 }
 
+double _cos(double angle){
+    return cos(angleToRad(angle));
+}
+
+double _sin(double angle){
+    return sin(angleToRad(angle));
+}
+
 void pRotatef(double angle, double &xOut, double &yOut, double x0 = 0., double y0 = 0.){
-  double tetha = angleToRadians(angle);
+  double tetha = angleToRad(angle);
 
   double _sin = sin(tetha);
   double _cos = cos(tetha);
@@ -57,17 +65,18 @@ void Character::DrawCharacter(GLdouble x, GLdouble y, GLdouble z)
 
     // DrawAxes();
     // DrawHitbox();
+
     // DEBUG: AIM POSITION
-    vec3 finalAim = GetFinalAimPosition();
-    vec3 initAim = GetInitialAimPosition();  
-    glPushMatrix();
-    glTranslatef(finalAim.x, finalAim.y, finalAim.z);
-    DrawCircle(armWidth/3, 1, 0, 0);
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(initAim.x, initAim.y, initAim.z);
-    DrawCircle(armWidth/2, 1, 0, 0);
-    glPopMatrix();
+    // vec3 finalAim = GetFinalAimPosition();
+    // vec3 initAim = GetInitialAimPosition();  
+    // glPushMatrix();
+    // glTranslatef(finalAim.x, finalAim.y, finalAim.z);
+    // DrawCircle(armWidth/3, 1, 0, 0);
+    // glPopMatrix();
+    // glPushMatrix();
+    // glTranslatef(initAim.x, initAim.y, initAim.z);
+    // DrawCircle(armWidth/2, 1, 0, 0);
+    // glPopMatrix();
 
     glPopMatrix();
 }
@@ -378,8 +387,8 @@ void Character::TurnRight(GLdouble timeDiff) {
 }
 
 void Character::CalculateDirectionVector() {
-    this->directionVector.x = cos(angleToRadians(this->lookingAngle));
-    this->directionVector.z = sin(angleToRadians(this->lookingAngle));
+    this->directionVector.x = _cos(this->lookingAngle);
+    this->directionVector.z = _sin(this->lookingAngle);
 }
 
 void Character::TurnLeft(GLdouble timeDiff) {
@@ -421,8 +430,8 @@ Shot* Character::Shoot() {
     if (this->ammo > 0) {
         this->ammo -= 1;
 
-        vec3 inicAim = GetInitialAimPosition();
-        vec3 finalAim = GetFinalAimPosition();
+        vec3 inicAim = GetInitialShootPosition();
+        vec3 finalAim = GetFinalShootPosition();
 
         vec3 shotDirection = finalAim-inicAim;
 
@@ -434,30 +443,47 @@ Shot* Character::Shoot() {
     return nullptr;
 }
 
-vec3 Character::GetInitialAimPosition() {
-    vec3 initialArmPoint;
+vec3 Character::GetInitialShootPosition() {
     GLdouble inicX = gX;
     GLdouble inicY = gY + 0.3 * totalHeight - armWidth/2;
     GLdouble inicZ = gZ;
 
     // Move  a mira pro lado (eixo z do boneco)
-    inicX += (this->bodyWidth/2+this->armWidth/2)*sin(angleToRadians(this->lookingAngle));
-    inicZ += (this->bodyWidth/2+this->armWidth/2)*cos(angleToRadians(this->lookingAngle));
+    inicX += (bodyWidth/2+armWidth/2)*_sin(lookingAngle);
+    inicZ += (bodyWidth/2+armWidth/2)*_cos(lookingAngle);
     
     return vec3(inicX, inicY, inicZ);
 }
 
-vec3 Character::GetFinalAimPosition() {
-    vec3 inic = GetInitialAimPosition();
+vec3 Character::GetFinalShootPosition() {
+    vec3 inic = GetInitialShootPosition();
     GLdouble tX, tY, tZ;
 
-    // tX = inic.x + (armHeight)*(cos(angleToRadians(lookingAngle+armThetaXY))); // equivalentes
-    // tZ = inic.z + (armHeight)*(cos(angleToRadians(90+lookingAngle+armThetaXY))); // equivalentes
-    tX = inic.x + (this->armHeight)*cos(angleToRadians(-this->lookingAngle-armThetaXY)); // equivalentes
-    tZ = inic.z + (this->armHeight)*sin(angleToRadians(-this->lookingAngle-armThetaXY)); // equivalentes
-    tY = inic.y + (armHeight)*(sin(angleToRadians(armThetaXZ)));
+    tX = inic.x + armHeight * _cos(lookingAngle+armThetaXY)    * _cos(armThetaXZ); 
+    tZ = inic.z + armHeight * _cos(90+lookingAngle+armThetaXY) * _sin(90+armThetaXZ);
+    tY = inic.y + armHeight * _sin(armThetaXZ);
 
-    // TODO: AINDA TÁ FALTANDO ALGO PRA FICAR 100%
+    return vec3(tX, tY, tZ);
+}
+
+vec3 Character::GetInitialAimPosition() {
+    vec3 inic = GetInitialShootPosition();
+    GLdouble tX, tY, tZ;
+
+    tX = inic.x + armWidth * _cos(lookingAngle+armThetaXY)    * _cos(armThetaXZ+90); 
+    tZ = inic.z + armWidth * _cos(90+lookingAngle+armThetaXY) * _sin(90+armThetaXZ+90);
+    tY = inic.y + armWidth * _sin(armThetaXZ+90);
+
+    return vec3(tX, tY, tZ);
+}
+
+vec3 Character::GetFinalAimPosition() {
+    vec3 inic = GetFinalShootPosition();
+    GLdouble tX, tY, tZ;
+
+    tX = inic.x + armWidth * _cos(lookingAngle+armThetaXY)    * _cos(armThetaXZ+90); 
+    tZ = inic.z + armWidth * _cos(90+lookingAngle+armThetaXY) * _sin(90+armThetaXZ+90);
+    tY = inic.y + armWidth * _sin(armThetaXZ+90);
 
     return vec3(tX, tY, tZ);
 }
@@ -571,6 +597,10 @@ GLdouble Character::GetCharacterHighestY() {
 
 GLdouble Character::GetBodyWidth() {
     return this->bodyWidth;
+}
+
+GLdouble Character::GetArmWidth() {
+    return this->armWidth;
 }
 
 GLdouble Character::GetTotalHeight() {

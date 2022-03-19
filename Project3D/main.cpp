@@ -110,7 +110,8 @@ int toggleCam = 2;
 int camAngle = 60;
 int lastX = 0;
 int lastY = 0;
-int buttonDown=0;
+int leftButtonDown=0;
+int lastCamera = 0;
 
 GLuint LoadTextureRAW( const char * filename );
 
@@ -355,14 +356,14 @@ void normalize(float a[3])
     a[2] /= norm;
 }
 
-void changeCamera(int angle, int w, int h)
+void changeCamera(int angle, int w, int h, double znear = 1)
 {
     glMatrixMode (GL_PROJECTION);
 
     glLoadIdentity();
 
     gluPerspective (angle, 
-            (GLfloat)w / (GLfloat)h, 1, map->GetSizeX());
+            (GLfloat)w / (GLfloat)h, znear, map->GetSizeX());
 
     glMatrixMode (GL_MODELVIEW);
 }
@@ -387,12 +388,13 @@ void eyeCamera() {
 
 void aimingCamera() {
     vec3 direction = player->GetDirectionVector();
-    vec3 armPosition = player->GetInitialAimPosition();
-    vec3 armFinalPosition = player->GetFinalAimPosition();
+    vec3 aimFinalPosition = player->GetFinalAimPosition();
+    vec3 aimPosition = player->GetInitialAimPosition();
+    // aimPosition = (aimFinalPosition+aimPosition)/2;
     PrintText(0.1, 0.1, "Aiming Camera", 0,1,0);
-    // changeCamera(camAngle+30, ViewingWidth, ViewingHeight);
-    gluLookAt(armPosition.x, armPosition.y, armPosition.z,
-    armFinalPosition.x, armFinalPosition.y, armFinalPosition.z, 0, 1, 0);
+    changeCamera(camAngle-15, ViewingWidth, ViewingHeight, 0.1);
+    gluLookAt(aimPosition.x, aimPosition.y, aimPosition.z,
+    aimFinalPosition.x, aimFinalPosition.y, aimFinalPosition.z, 0, 1, 0);
 }
 
 void display (void) {
@@ -450,12 +452,13 @@ void display (void) {
         glEnable (GL_LIGHTING);
         glPopMatrix();
         map->Draw();
-        player->Draw();
 
         for (Shot* shot : playerShots ) {
             shot->Draw();
         }
         map->DrawShots(); // Tiros dos inimigos
+
+        player->Draw();
     }
 
     glutSwapBuffers();
@@ -486,10 +489,13 @@ void mouse_callback(int button, int state, int x, int y)
     if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
         // lastX = x;
         // lastY = y;
-        buttonDown = 1;
+        leftButtonDown = 1;
+        lastCamera = toggleCam;
+        toggleCam = 1;
     } 
     if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP) {
-        buttonDown = 0;
+        leftButtonDown = 0;
+        toggleCam = lastCamera;
     }
 }
 
@@ -503,10 +509,11 @@ void mouse_motion(int x, int y)
         player->MoveArmsAngle(0, incrementY, 0);
         lastAimY = y;
     }
-    if (incrementX != 0) {
-        player->MoveArmsAngle(incrementX, 0, 0);
-        lastAimX = x;
-    }
+    // TODO: MIRA EM AMBAS DIRECOES N TÁ 100% BOM AINDA
+    // if (incrementX != 0) {
+    //     player->MoveArmsAngle(incrementX, 0, 0);
+    //     lastAimX = x;
+    // }
 
     // Movimento da Camera
     if (!keyStatus[(int)('x')])
