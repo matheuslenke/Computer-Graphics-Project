@@ -426,14 +426,14 @@ void normalize(vec3 &a)
     a.z /= norm;
 }
 
-Shot* Character::Shoot() {
+Shot* Character::Shoot(vec3* target) {
     if (this->ammo > 0) {
         this->ammo -= 1;
 
         vec3 inicAim = GetInitialShootPosition();
         vec3 finalAim = GetFinalShootPosition();
 
-        vec3 shotDirection = finalAim-inicAim;
+        vec3 shotDirection = target ? (*target)-finalAim : finalAim-inicAim;
 
         normalize(shotDirection);
         // cout << "Shot Direction: " << shotDirection.x << "," << shotDirection.y << "," << shotDirection.z << endl;

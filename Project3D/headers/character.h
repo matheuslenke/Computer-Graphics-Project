@@ -143,7 +143,7 @@ public:
     vec3 GetInitialShootPosition();
     vec3 GetFinalShootPosition();
     void MoveArmsAngle(GLdouble x, GLdouble y, GLdouble z);
-    Shot* Shoot();
+    Shot* Shoot(vec3* target = NULL);
     void RechargeShot();
     bool CollidesWithPoint(GLdouble x, GLdouble y, GLdouble z);
     bool CollidesWithEndOfMap(Map* map);

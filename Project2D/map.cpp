@@ -112,8 +112,8 @@ void Map::ExecuteEnemiesActions(GLdouble timeDifference, Character* player, GLbo
     vec3 playerPosition = player->getPosition();
     for (Enemy* enemy : this->enemies) {
         Shot* aux;
-        enemy->AdjustArms(vec2(playerPosition.x, playerPosition.y));
         aux = enemy->DoAction(timeDifference, this, player, stopMoving);
+        enemy->AdjustArms(vec2(playerPosition.x, playerPosition.y));
         if (aux != nullptr) {
             enemyShots.push_back(aux);
         }

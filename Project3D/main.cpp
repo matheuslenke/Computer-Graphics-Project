@@ -70,36 +70,7 @@ EnemyStatus enemyStatus = SHOOTING_AND_MOVING;
 // Impressao na tela
 void * font = GLUT_BITMAP_9_BY_15;
 
-typedef struct
-{
-    //Vertex coordinate
-    double X;
-    double Y;
-    double Z;
-    
-    //Vertex normal 
-    double nX;
-    double nY;
-    double nZ;
-    
-    //Vertex texture coordinate
-    double U;
-    double V;
-} VERTICES;
-
-typedef struct
-{
-    VERTICES * vtx;
-    int numVtx;
-    double radius;
-} OBJ;
-
-OBJ* objEarth;
-OBJ* objSun;
-
 //Identificadores de textura
-GLuint textureEarth;
-GLuint textureSun;
 GLuint texturePlane;
 
 
@@ -268,86 +239,6 @@ void crossProduct(
     oZ /= norm;
 }
 
-OBJ * CreateSphere (double R, double space) 
-{
-    OBJ *obj = new OBJ;
-    
-    obj->numVtx = (180 / space) * 
-                  (2 + 360 / (2*space)) * 4;
-    obj->vtx = new VERTICES[ obj->numVtx ];
-    obj->radius = R;
-
-    int n;
-    double vR, lVR;
-    double hR, lHR;
-    double norm;
-    n = 0;
-    for( vR = 0; vR <= 180-space; vR+=space){
-        for(hR = 0; hR <= 360+2*space; hR+=2*space)
-        {
-            lVR = vR;
-            lHR = hR;
-            obj->vtx[n].X = R * 
-                    sin(lHR / 180 * M_PI) * 
-                    sin(lVR / 180 * M_PI);
-            obj->vtx[n].Y = R * 
-                    cos(lHR / 180 * M_PI) * 
-                    sin(lVR / 180 * M_PI);
-            obj->vtx[n].Z = R * 
-                    cos(lVR / 180 * M_PI);
-            obj->vtx[n].V = lVR / 180;
-            obj->vtx[n].U = lHR / 360;
-            norm = sqrt(
-                    obj->vtx[n].X*obj->vtx[n].X+
-                    obj->vtx[n].Y*obj->vtx[n].Y+
-                    obj->vtx[n].Z*obj->vtx[n].Z);
-            obj->vtx[n].nX = obj->vtx[n].X/norm;
-            obj->vtx[n].nY = obj->vtx[n].Y/norm;
-            obj->vtx[n].nZ = obj->vtx[n].Z/norm;
-            n++;
-
-            lVR = vR + space;
-            lHR = hR;
-            obj->vtx[n].X = R * sin(lHR / 180 * M_PI) * sin(lVR / 180 * M_PI);
-            obj->vtx[n].Y = R * cos(lHR / 180 * M_PI) * sin(lVR / 180 * M_PI);
-            obj->vtx[n].Z = R * cos(lVR / 180 * M_PI);
-            obj->vtx[n].V = lVR / 180;
-            obj->vtx[n].U = lHR / 360;
-            norm = sqrt(obj->vtx[n].X*obj->vtx[n].X+obj->vtx[n].Y*obj->vtx[n].Y+obj->vtx[n].Z*obj->vtx[n].Z);
-            obj->vtx[n].nX = obj->vtx[n].X/norm;
-            obj->vtx[n].nY = obj->vtx[n].Y/norm;
-            obj->vtx[n].nZ = obj->vtx[n].Z/norm;
-            n++;
-
-            lVR = vR;
-            lHR = hR + space;
-            obj->vtx[n].X = R * sin(lHR / 180 * M_PI) * sin(lVR / 180 * M_PI);
-            obj->vtx[n].Y = R * cos(lHR / 180 * M_PI) * sin(lVR / 180 * M_PI);
-            obj->vtx[n].Z = R * cos(lVR / 180 * M_PI);
-            obj->vtx[n].V = lVR / 180;
-            obj->vtx[n].U = lHR / 360;
-            norm = sqrt(obj->vtx[n].X*obj->vtx[n].X+obj->vtx[n].Y*obj->vtx[n].Y+obj->vtx[n].Z*obj->vtx[n].Z);
-            obj->vtx[n].nX = obj->vtx[n].X/norm;
-            obj->vtx[n].nY = obj->vtx[n].Y/norm;
-            obj->vtx[n].nZ = obj->vtx[n].Z/norm;
-            n++;
-
-            lVR = vR + space;
-            lHR = hR + space;
-            obj->vtx[n].X = R * sin(lHR / 180 * M_PI) * sin(lVR / 180 * M_PI);
-            obj->vtx[n].Y = R * cos(lHR / 180 * M_PI) * sin(lVR / 180 * M_PI);
-            obj->vtx[n].Z = R * cos(lVR / 180 * M_PI);
-            obj->vtx[n].V = lVR / 180;
-            obj->vtx[n].U = lHR / 360;
-            norm = sqrt(obj->vtx[n].X*obj->vtx[n].X+obj->vtx[n].Y*obj->vtx[n].Y+obj->vtx[n].Z*obj->vtx[n].Z);
-            obj->vtx[n].nX = obj->vtx[n].X/norm;
-            obj->vtx[n].nY = obj->vtx[n].Y/norm;
-            obj->vtx[n].nZ = obj->vtx[n].Z/norm;
-            n++;
-        }
-    }
-    return obj;
-}
 
 //Funcao auxiliar para normalizar um vetor a/|a|
 void normalize(float a[3])
@@ -412,12 +303,57 @@ void drawLights() {
         glPopMatrix();
 }
 
+void DisplayPlane (GLuint texture)
+{
+    glPushAttrib(GL_LIGHTING_BIT);
+
+    GLfloat materialEmission[] = { 1.0, 1.0, 1.0, 1};
+    GLfloat materialColorA[] = { 0.2, 0.2, 0.2, 1};
+    GLfloat materialColorD[] = { 1.0, 1.0, 1.0, 1};
+    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1};
+    GLfloat mat_shininess[] = { 100.0 };
+    glColor3f(1,1,1);
+
+    glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
+    glMaterialfv(GL_FRONT, GL_AMBIENT, materialColorA);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, materialColorD);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT  );//X
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );//Y
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+    double textureS = 1; // Bigger than 1, repeat
+    glBegin (GL_QUADS);
+        glNormal3f(0,1,0);
+        glTexCoord2f (0, 0);
+        glVertex3f (-1, 0, -1);
+        glNormal3f(0,1,0);
+        glTexCoord2f (0, textureS);
+        glVertex3f (-1, 0, +1);
+        glNormal3f(0,1,0);
+        glTexCoord2f (textureS, textureS);
+        glVertex3f (+1, 0, +1);
+        glNormal3f(0,1,0);
+        glTexCoord2f (textureS, 0);
+        glVertex3f (+1, 0, -1);
+    glEnd();
+
+    glPopAttrib();
+
+}
+
 void display (void) {
     glClearColor (0.2,0.2,0.2,1.0);
+    // glClearColor (0.,0.,0.,1.0);
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-        if(gameOver == true) {
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    if(gameOver == true) {
         GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
         PrintText(0.4, 0.5, "Game Over!", 0,1,0);
         PrintText(0.32, 0.4, "Press R to restart!!", 0,1,0);
@@ -451,7 +387,8 @@ void display (void) {
             glRotatef(camXYAngle,0,1,0);
             glTranslatef(-player->GetgX(), -player->GetgY(), -player->GetgZ());
         }
-        if(dark == false) {
+        
+        if(!dark) {
             drawLights();
         }
 
@@ -465,6 +402,14 @@ void display (void) {
         player->Draw();
     }
 
+     glPushMatrix();
+        glScalef(70,70,1);
+        glTranslatef(0,0,-10);
+        glRotatef(90,1,0,0);
+        DisplayPlane(texturePlane);
+    glPopMatrix();
+
+
     glutSwapBuffers();
 }
 
@@ -474,7 +419,12 @@ void init (void) {
     glEnable(GL_LIGHTING);
     glShadeModel (GL_SMOOTH);
 
-    glDepthFunc(GL_LEQUAL);
+    glDepthFunc(GL_LEQUAL);   
+
+    texturePlane = LoadTextureRAW( "stars1.bmp" );
+
+    glBindTexture( GL_TEXTURE_2D, 0);
+    // glEnable( GL_NORMALIZE );
     glEnable(GL_LIGHT0);
 }
 
@@ -720,11 +670,7 @@ void keyboard(unsigned char key, int x, int y)
             keyStatus[(int)('k')] = 1;
             break;
         case 'l':
-            if(dark) {
-                dark = false;
-            } else {
-                dark = true;
-            }
+            dark = !dark;
             break;
         case 'i':
             keyStatus[(int)('i')] = 1;
@@ -815,7 +761,7 @@ GLuint LoadTextureRAW( const char * filename )
     glGenTextures( 1, &texture );
     glBindTexture( GL_TEXTURE_2D, texture );
     glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,GL_MODULATE );
-//    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,GL_REPLACE );
+    // glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,GL_REPLACE );
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_LINEAR );
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_LINEAR );
     glTexImage2D(GL_TEXTURE_2D,                //Always GL_TEXTURE_2D

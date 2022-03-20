@@ -25,6 +25,7 @@ protected:
     vector<int> actingPattern;
     int actualAction;
     GLboolean foundGround = false;
+    GLboolean canShoot = false;
     GLboolean isOnPlatform = false;
     GLdouble minWalkingX;
     GLdouble maxWalkingX;

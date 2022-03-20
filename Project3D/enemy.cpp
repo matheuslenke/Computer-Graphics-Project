@@ -80,7 +80,10 @@ Shot* Enemy::DoAction(GLfloat timeDiff, Map* map, Character* player, EnemyStatus
     else if (action == 0 && (enemyStatus == SHOOTING_AND_MOVING || enemyStatus == MOVING)) {
         this->MoveInX(timeDiff, map, player);
     } else if (action == 1 && (enemyStatus == SHOOTING || enemyStatus == SHOOTING_AND_MOVING)) {
-        aux = this->Shoot();
+        if(canShoot){
+            vec3 target = player->getPosition();
+            aux = this->Shoot(&target);
+        }
         if (aux) {
             vec3 shotPos = aux->GetPos();
         }
@@ -164,15 +167,18 @@ void Enemy::AdjustArms(vec3 playerPosition) {
         }
         if (angleXY > -45 && angleXY < 45) {
             this->armThetaXY = -angleXY;
-        }
+            canShoot = true;
+        }else {canShoot = false;}
     } else {
         if (angleXY > -45 && angleXY < 45) {
             this->armThetaXY = -angleXY;
-        }
+            canShoot = true;
+        }else {canShoot = false;}
     }
         if (angleXZ > -45 && angleXZ < 45) {
             this->armThetaXZ = angleXZ;
-        }
+            canShoot = canShoot && true;
+        }else {canShoot = false;}
 }
 
 void Enemy::NextAction() {
