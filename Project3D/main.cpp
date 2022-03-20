@@ -57,6 +57,7 @@ GLboolean gameWin = false;
 string filename = "";
 int lastAimY = 0;
 int lastAimX = 0;
+GLboolean dark = false;
 
 // Parametros de ação dos inimigos
 GLfloat changeActionActualTime = 0;
@@ -152,6 +153,7 @@ void readXMLFile(string filename) {
     for(Platform p : platforms) {
         map->AddPlatform(p);
     }
+    mapDocument.Clear();
 }
 
 void RasterChars(GLfloat x, GLfloat y, GLfloat z, const char * text, double r, double g, double b)
@@ -397,6 +399,19 @@ void aimingCamera() {
     aimFinalPosition.x, aimFinalPosition.y, aimFinalPosition.z, 0, 1, 0);
 }
 
+void drawLights() {
+        GLfloat light_position[] = { (GLfloat) (player->GetgX() - player->GetTotalHeight()), (GLfloat) (player->GetgY() + (GLfloat)1.5 * player->GetTotalHeight()), map->GetSizeZ(), 1.0 };
+
+        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+        glDisable (GL_LIGHTING);
+        glColor3f (0.0, 1.0, 1.0);
+        glPushMatrix();
+        glTranslatef(light_position[0], light_position[1], light_position[2]);
+        glutWireCube (0.1);
+        glEnable (GL_LIGHTING);
+        glPopMatrix();
+}
+
 void display (void) {
     glClearColor (0.2,0.2,0.2,1.0);
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -405,14 +420,11 @@ void display (void) {
         if(gameOver == true) {
         GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
         PrintText(0.4, 0.5, "Game Over!", 0,1,0);
-        PrintText(0.3, 0.3, "Press R to restart!!", 0,1,0);
+        PrintText(0.32, 0.4, "Press R to restart!!", 0,1,0);
     } else if (gameWin == true) {
-
         GLfloat xOff = player->GetgX() - (ViewingWidth / 2);
-         PrintText(0.4, 0.5, "Congratulations!", 0,1,0);
-         PrintText(0.3, 0.5, "Press r to play again!!", 0,1,0);
-        // PrintOnScreen(xOff + ViewingWidth/3, cameraY + ViewingHeight/2, "Congratulations!");
-        // PrintOnScreen(xOff + ViewingWidth/4, cameraY + ViewingHeight/3, text);
+         PrintText(0.35, 0.55, "Congratulations!", 0,1,0);
+         PrintText(0.30, 0.5, "Press r to play again!!", 0,1,0);
     } else {
         switch (enemyStatus) {
             case MOVING:
@@ -439,18 +451,10 @@ void display (void) {
             glRotatef(camXYAngle,0,1,0);
             glTranslatef(-player->GetgX(), -player->GetgY(), -player->GetgZ());
         }
+        if(dark == false) {
+            drawLights();
+        }
 
-        GLfloat light_position[] = { (GLfloat) (player->GetgX() - player->GetTotalHeight()), (GLfloat) (player->GetgY() + (GLfloat)1.5 * player->GetTotalHeight()), map->GetSizeZ(), 1.0 };
-
-        // cout << "Ligth position:" << light_position[0] << " , " << light_position[1]<<" , " << player->GetgY() << endl;
-        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-        glDisable (GL_LIGHTING);
-        glColor3f (0.0, 1.0, 1.0);
-        glPushMatrix();
-        glTranslatef(light_position[0], light_position[1], light_position[2]);
-        glutWireCube (0.1);
-        glEnable (GL_LIGHTING);
-        glPopMatrix();
         map->Draw();
 
         for (Shot* shot : playerShots ) {
@@ -636,9 +640,9 @@ void keyboard(unsigned char key, int x, int y)
         }
         return;
      }
-    static bool textureEnebled = true;
-    static bool lightingEnebled = true;
-    static bool smoothEnebled = true;
+    static bool textureEnabled = true;
+    static bool lightingEnabled = true;
+    static bool smoothEnabled = true;
     switch (key) {
         case '1':
             toggleCam = 0;
@@ -650,28 +654,28 @@ void keyboard(unsigned char key, int x, int y)
             toggleCam = 2;
             break;
         case '7':
-            if ( textureEnebled ){
+            if ( textureEnabled ){
                 glDisable( GL_TEXTURE_2D );
             }else{
                 glEnable( GL_TEXTURE_2D );
             }
-            textureEnebled = !textureEnebled; 
+            textureEnabled = !textureEnabled; 
             break;
         case '8':
-            if ( lightingEnebled ){
+            if ( lightingEnabled ){
                 glDisable( GL_LIGHTING );
             }else{
                 glEnable( GL_LIGHTING );
             }
-            lightingEnebled = !lightingEnebled; 
+            lightingEnabled = !lightingEnabled; 
             break;
         case '9':
-            if ( smoothEnebled ){
+            if ( smoothEnabled ){
                 glShadeModel (GL_FLAT);
             }else{
                 glShadeModel (GL_SMOOTH);
             }
-            smoothEnebled = !smoothEnebled; 
+            smoothEnabled = !smoothEnabled; 
             break;
         case '+':
         {
@@ -715,9 +719,13 @@ void keyboard(unsigned char key, int x, int y)
         case 'k':
             keyStatus[(int)('k')] = 1;
             break;
-        // case 'l':
-        //     keyStatus[(int)('l')] = 1;
-        //     break;
+        case 'l':
+            if(dark) {
+                dark = false;
+            } else {
+                dark = true;
+            }
+            break;
         case 'i':
             keyStatus[(int)('i')] = 1;
             break;
