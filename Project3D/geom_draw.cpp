@@ -111,12 +111,16 @@ void drawRectangleTextured(GLdouble height, GLdouble width, GLdouble depth, GLfl
     for (int i = 0; i < slices; i++){
         for (int j = 0; j < slices; j++){
             glBegin(GL_QUADS);
+                glNormal3f(0,1,0);
                 glTexCoord2f ((texW/slices)*i,(texD/slices)*j);
                     glVertex3f ((width/slices)*i, 0, (depth/slices)*j);
+                glNormal3f(0,1,0);
                 glTexCoord2f ((texW/slices)*(i+1),(texD/slices)*j);
                     glVertex3f ((width/slices)*(i+1), 0,(depth/slices)*j);
+                glNormal3f(0,1,0);
                 glTexCoord2f ((texW/slices)*(i+1), (texD/slices)*(j+1));
                     glVertex3f ((width/slices)*(i+1), 0, (depth/slices)*(j+1));
+                glNormal3f(0,1,0);
                 glTexCoord2f ((texW/slices)*i, (texD/slices)*(j+1));
                     glVertex3f ((width/slices)*i, 0, (depth/slices)*(j+1));
             glEnd();
@@ -124,12 +128,16 @@ void drawRectangleTextured(GLdouble height, GLdouble width, GLdouble depth, GLfl
             // Face inferior
             glNormal3f(0,-1,0);
             glBegin(GL_QUADS);
+                glNormal3f(0,-1,0);
                 glTexCoord2f ((texW/slices)*i,(texD/slices)*j);
                     glVertex3f ((width/slices)*i, -height, (depth/slices)*j);
+                glNormal3f(0,-1,0);
                 glTexCoord2f ((texW/slices)*(i+1),(texD/slices)*j);
                     glVertex3f ((width/slices)*(i+1), -height,(depth/slices)*j);
+                glNormal3f(0,-1,0);
                 glTexCoord2f ((texW/slices)*(i+1), (texD/slices)*(j+1));
                     glVertex3f ((width/slices)*(i+1), -height, (depth/slices)*(j+1));
+                glNormal3f(0,-1,0);
                 glTexCoord2f ((texW/slices)*i, (texD/slices)*(j+1));
                     glVertex3f ((width/slices)*i, -height, (depth/slices)*(j+1));
             glEnd();
@@ -137,11 +145,15 @@ void drawRectangleTextured(GLdouble height, GLdouble width, GLdouble depth, GLfl
             // Faces laterais
             glNormal3f(-1,0,0);
             glBegin(GL_QUADS); // 1
+                glNormal3f(-1,0,0);
                 glTexCoord2f ((texH/slices)*i,(texD/slices)*j);
+                glNormal3f(-1,0,0);
                     glVertex3f (0, (-height/slices)*i, (depth/slices)*j);
                 glTexCoord2f ((texH/slices)*(i+1),(texD/slices)*j);
+                glNormal3f(-1,0,0);
                     glVertex3f (0, (-height/slices)*(i+1), (depth/slices)*j);
                 glTexCoord2f ((texH/slices)*(i+1), (texD/slices)*(j+1));
+                glNormal3f(-1,0,0);
                     glVertex3f (0, (-height/slices)*(i+1), (depth/slices)*(j+1));
                 glTexCoord2f ((texH/slices)*i, (texD/slices)*(j+1));
                     glVertex3f (0, (-height/slices)*i, (depth/slices)*(j+1));
@@ -149,36 +161,48 @@ void drawRectangleTextured(GLdouble height, GLdouble width, GLdouble depth, GLfl
 
             glNormal3f(0,0,1);
             glBegin(GL_QUADS); // 2
+                glNormal3f(0,0,1);
                 glTexCoord2f ((texW/slices)*i,(texH/slices)*j);
                     glVertex3f ((width/slices)*i, (-height/slices)*j, depth);
+                glNormal3f(0,0,1);
                 glTexCoord2f ((texW/slices)*(i),(texH/slices)*(j+1));
                     glVertex3f ((width/slices)*i, (-height/slices)*(j+1), depth);
+                glNormal3f(0,0,1);
                 glTexCoord2f ((texW/slices)*(i+1), (texH/slices)*(j+1));
                     glVertex3f ((width/slices)*(i+1), (-height/slices)*(j+1), depth);
+                glNormal3f(0,0,1);
                 glTexCoord2f ((texW/slices)*(i+1), (texH/slices)*(j));
                     glVertex3f ((width/slices)*(i+1), (-height/slices)*j, depth);
             glEnd();
 
             glNormal3f(1,0,0);
             glBegin(GL_QUADS); // 3
+                glNormal3f(1,0,0);
                 glTexCoord2f ((texH/slices)*i,(texD/slices)*j);
                     glVertex3f (width, (-height/slices)*i, (depth/slices)*j);
+                glNormal3f(1,0,0);
                 glTexCoord2f ((texH/slices)*(i+1),(texD/slices)*j);
                     glVertex3f (width, (-height/slices)*(i+1), (depth/slices)*j);
+                glNormal3f(1,0,0);
                 glTexCoord2f ((texH/slices)*(i+1), (texD/slices)*(j+1));
                     glVertex3f (width, (-height/slices)*(i+1), (depth/slices)*(j+1));
+                glNormal3f(1,0,0);
                 glTexCoord2f ((texH/slices)*i, (texD/slices)*(j+1));
                     glVertex3f (width, (-height/slices)*i, (depth/slices)*(j+1));
             glEnd();
 
             glNormal3f(0,0, -1);
             glBegin(GL_QUADS); // 4
+                glNormal3f(0,0, -1);
                 glTexCoord2f ((texW/slices)*i,(texH/slices)*j);
                     glVertex3f ((width/slices)*i, (-height/slices)*j, 0);
+                glNormal3f(0,0, -1);
                 glTexCoord2f ((texW/slices)*(i+1),(texH/slices)*(j));
                     glVertex3f ((width/slices)*(i+1), (-height/slices)*j, 0);
+                glNormal3f(0,0, -1);
                 glTexCoord2f ((texW/slices)*(i+1), (texH/slices)*(j+1));
                     glVertex3f ((width/slices)*(i+1), (-height/slices)*(j+1), 0);
+                glNormal3f(0,0, -1);
                 glTexCoord2f ((texW/slices)*(i), (texH/slices)*(j+1));
                     glVertex3f ((width/slices)*i, (-height/slices)*(j+1), 0);
             glEnd();
