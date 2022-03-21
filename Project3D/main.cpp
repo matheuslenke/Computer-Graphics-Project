@@ -58,6 +58,9 @@ string filename = "";
 int lastAimY = 0;
 int lastAimX = 0;
 GLboolean dark = false;
+static bool textureEnabled = true;
+static bool lightingEnabled = true;
+static bool smoothEnabled = true;
 
 // Parametros de ação dos inimigos
 GLfloat changeActionActualTime = 0;
@@ -317,9 +320,9 @@ static const GLfloat light_specular[] = {1,1,1,1};
 void drawLights() {
         GLfloat light_position[4] = { (GLfloat) (player->GetgX() - player->GetTotalHeight()), (GLfloat) (player->GetgY() + (GLfloat)1.5 * player->GetTotalHeight()), map->GetSizeZ(), 1.0 };
         if(!dark){
-            glDisable(GL_LIGHT1);
             glLightfv(GL_LIGHT0, GL_POSITION, light_position);
             glEnable(GL_LIGHT0);
+            glDisable(GL_LIGHT1);
         } else {
             glDisable(GL_LIGHT0);
 
@@ -447,23 +450,23 @@ void display (void) {
         player->Draw();
     }
 
-    StartTexturing();
-        glPushMatrix();
-            glScalef(1000,1000,1);
-            glTranslatef(0,0,-100);
-            glRotatef(90,1,0,0);
-            DisplayPlane(texturePlane);
-        glPopMatrix();
-        glPushMatrix();
-            glScalef(1000,1000,1);
-            glTranslatef(0,0,100);
-            glRotatef(90,1,0,0);
-            DisplayPlane(texturePlane);
-        glPopMatrix();
+    if(textureEnabled) {
+        StartTexturing();
+            glPushMatrix();
+                glScalef(1000,1000,1);
+                glTranslatef(0,0,-100);
+                glRotatef(90,1,0,0);
+                DisplayPlane(texturePlane);
+            glPopMatrix();
+            glPushMatrix();
+                glScalef(1000,1000,1);
+                glTranslatef(0,0,100);
+                glRotatef(90,1,0,0);
+                DisplayPlane(texturePlane);
+            glPopMatrix();
 
-    EndTexturing();
-
-
+        EndTexturing();
+    }
     glutSwapBuffers();
 }
 
@@ -663,9 +666,6 @@ void keyboard(unsigned char key, int x, int y)
         }
         return;
      }
-    static bool textureEnabled = true;
-    static bool lightingEnabled = true;
-    static bool smoothEnabled = true;
     switch (key) {
         case '1':
             toggleCam = 0;

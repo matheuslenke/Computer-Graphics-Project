@@ -31,17 +31,21 @@ void Map::DrawOutline() {
     float textureX = sizeX/texSize;
     float textureY = sizeY/texSize;
 
-    glNormal3f(0,1,0);
 
+    glNormal3f(0,1,0);
     for (int i = 0; i < slicesX; i++){
         for (int j = 0; j < slicesY; j++){
             glBegin(GL_QUADS);
+                glNormal3f(0,1,0);
                 glTexCoord2f ((textureX/slicesX)*i,(textureY/slicesY)*j);
                 glVertex3f ((this->sizeX/slicesX)*i, 0, (this->sizeZ/slicesY)*j);        
+                glNormal3f(0,1,0);
                 glTexCoord2f ((textureX/slicesX)*(i+1),(textureY/slicesY)*j);
                 glVertex3f ((this->sizeX/slicesX)*(i+1), 0, (this->sizeZ/slicesY)*j);
+                glNormal3f(0,1,0);
                 glTexCoord2f ((textureX/slicesX)*(i+1), (textureY/slicesY)*(j+1));
                 glVertex3f ((this->sizeX/slicesX)*(i+1) , 0, (this->sizeZ/slicesY)*(j+1));
+                glNormal3f(0,1,0);
                 glTexCoord2f ((textureX/slicesX)*i, (textureY/slicesY)*(j+1));
                 glVertex3f ((this->sizeX/slicesX)*i, 0, (this->sizeZ/slicesY)*(j+1));
             glEnd();
