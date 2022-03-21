@@ -35,7 +35,7 @@ protected:
     GLboolean CollidesRightWithCharacter(Character* character);
     GLboolean CollidesLeftWithCharacter(Character* character);
 public:
-    Enemy(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor, vec3 shootColor, GLint ammo) : Character(x, y, totalHeight, groundLimit, bodyColor, shootColor, ammo) {
+    Enemy(GLfloat x, GLfloat y, GLfloat totalHeight, GLfloat groundLimit, vec3 bodyColor, vec3 shootColor, GLint ammo) : Character(x + 0.1, y + 0.1, totalHeight, groundLimit, bodyColor, shootColor, ammo) {
         actualAction = 0;
         this->armThetaXY = 45;
     }
@@ -48,6 +48,10 @@ public:
     void NextAction();
     Shot* DoAction(GLfloat timeDiff, Map* map, Character* player, EnemyStatus enemyStatus);
     void AdjustArms(vec3 playerPosition);
+    void StartEnemy() {
+        this->foundGround = false;
+        this->isOnPlatform = false;
+    }
 };
 
 #endif	/* ENEMY_H */

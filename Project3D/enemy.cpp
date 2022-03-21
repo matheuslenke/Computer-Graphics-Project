@@ -113,7 +113,7 @@ GLboolean Enemy::CollidesDownWithCharacter(Character* character) {
 
 GLboolean Enemy::CollidesHorizontallyWithAPlatform(Map* map) {
     int nPartitions = 72;
-    for(double i = -0.48; i<= 0.41; i+=0.1) {
+    for(double i = -0.40; i<= 0.41; i+=0.1) {
         for(double j = 0; j < nPartitions; j++) {
             float theta = (2.0f * M_PI) * float(j) / float(nPartitions);//get the current angle
             GLdouble actualX = this->gX + (this->bodyWidth/2) * cosf(theta);

@@ -238,11 +238,10 @@ Map::~Map() {
     for (Enemy *enemy : this->enemies) {
         delete enemy;
     }
-    for (Shot* shot: enemyShots) {
+    for (Shot* shot: this->enemyShots) {
         delete shot;
     }
 }
-
 
 void Map::SetTextures(GLuint floorTexture, GLuint platformsTexture, GLuint enemiesTexture){
     this->floorTexture = floorTexture;

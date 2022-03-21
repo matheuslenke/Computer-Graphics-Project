@@ -119,6 +119,7 @@ void readXMLFile(string filename) {
             for(int i = 0; i < 20; i++) {
                 random = rand() % 2;
                 enemy->InsertAction(random);
+                enemy->StartEnemy();
             }
             enemies.push_back(enemy);
         }
@@ -183,6 +184,7 @@ void ResetKeyStatus()
 void restartGame() {
     gameOver = false;
     gameWin = false;
+    enemyStatus = SHOOTING_AND_MOVING;
     ResetKeyStatus();
     delete player;
     player = nullptr;
@@ -775,6 +777,9 @@ void keyboard(unsigned char key, int x, int y)
             break;
         case '6':
             enemyStatus = SHOOTING_AND_MOVING;
+            break;
+        case '0':
+            restartGame();
             break;
         case SPACEBAR:
             keyStatus[SPACEBAR] = 1;
