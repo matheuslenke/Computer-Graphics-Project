@@ -313,13 +313,7 @@ void drawLights() {
             glEnable(GL_LIGHT0);
         } else {
             glDisable(GL_LIGHT0);
-            // Set light intensity and color for each component
-            glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
-            glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
-            glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
 
-            glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, (GLfloat) 60.0);
-            glLightf(GL_LIGHT1,GL_SPOT_EXPONENT, 60);
             vec3 flashlightPos = player->GetFinalShootPosition();
             vec3 flashlightDir = flashlightPos - player->GetInitialShootPosition();
             normalizeVec(flashlightDir);
@@ -465,7 +459,13 @@ void init (void) {
 
     texturePlane = LoadTextureRAW( "stars1.bmp" );
 
+    // Set light intensity and color for each component
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
 
+    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, (GLfloat) 60.0);
+    glLightf(GL_LIGHT1,GL_SPOT_EXPONENT, 60);
 
     glBindTexture( GL_TEXTURE_2D, 0);
     // glEnable( GL_NORMALIZE );
