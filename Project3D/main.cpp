@@ -72,6 +72,11 @@ void * font = GLUT_BITMAP_9_BY_15;
 
 //Identificadores de textura
 GLuint texturePlane;
+GLuint textureWood;
+GLuint textureBlocks;
+GLuint textureHero;
+GLuint textureEnemies;
+
 
 
 //Camera controls
@@ -184,6 +189,8 @@ void restartGame() {
     delete map;
     map = nullptr;
     readXMLFile(filename);
+    map->SetTextures(textureWood, textureBlocks, textureEnemies);
+    player->SetTexture(textureHero);
 }
 
 void DrawAxes()
@@ -330,61 +337,58 @@ void drawLights() {
 
         }
 
-        cout << light_position[0] << ", " << light_position[1] << ", " <<  light_position[2] << endl;
-
         glDisable (GL_LIGHTING);
             glPushMatrix();
                 glColor3f (0.0, 1.0, 1.0);
                 glTranslatef(light_position[0], light_position[1], light_position[2]);
-                glutWireCube (1);
+                glutWireCube (0.1);
             glPopMatrix();
         glEnable (GL_LIGHTING);
 }
 
+void StartTexturing(){
+    glPushAttrib(GL_LIGHTING_BIT);
+        GLfloat materialEmission[] = { .6, 0.6, 0.6, 1}; 
+        GLfloat materialColorA[] = { 1, 1, 1, 1};
+        GLfloat materialColorD[] = { 1, 1, 1, 1};
+        GLfloat mat_specular[] = { 1, 1, 1, 1};
+        GLfloat mat_shininess[] = { 45.0 };
+        glColor3f(1,1,1);
+
+        glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
+        glMaterialfv(GL_FRONT, GL_AMBIENT, materialColorA);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, materialColorD);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+        glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT  );//X
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );//Y
+}
+
+void EndTexturing(){
+    glPopAttrib();
+}
+
 void DisplayPlane (GLuint texture)
 {
-    glPushAttrib(GL_LIGHTING_BIT);
-
-    GLfloat materialEmission[] = { 1.0, 1.0, 1.0, 1};
-    GLfloat materialColorA[] = { 0.2, 0.2, 0.2, 1};
-    GLfloat materialColorD[] = { 1.0, 1.0, 1.0, 1};
-    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1};
-    GLfloat mat_shininess[] = { 100.0 };
-    glColor3f(1,1,1);
-
-    glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
-    glMaterialfv(GL_FRONT, GL_AMBIENT, materialColorA);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, materialColorD);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-    
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT  );//X
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );//Y
-
     glBindTexture(GL_TEXTURE_2D, texture);
-    double textureS = 1; // Bigger than 1, repeat
+    double textureS = 10; // Bigger than 1, repeat
     glBegin (GL_QUADS);
         glNormal3f(0,1,0);
         glTexCoord2f (0, 0);
         glVertex3f (-1, 0, -1);
-        glNormal3f(0,1,0);
         glTexCoord2f (0, textureS);
         glVertex3f (-1, 0, +1);
-        glNormal3f(0,1,0);
         glTexCoord2f (textureS, textureS);
         glVertex3f (+1, 0, +1);
-        glNormal3f(0,1,0);
         glTexCoord2f (textureS, 0);
         glVertex3f (+1, 0, -1);
     glEnd();
-
-    glPopAttrib();
-
 }
 
 void display (void) {
-    glClearColor (0.2,0.2,0.2,1.0);
-    // glClearColor (0.,0.,0.,1.0);
+    // glClearColor (0.2,0.2,0.2,1.0);
+    glClearColor (0.,0.,0.,1.0);
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
@@ -429,6 +433,9 @@ void display (void) {
         drawLights();
 
         map->Draw();
+        glPushMatrix();
+        map->DrawOutline();
+        glPopMatrix();
 
         for (Shot* shot : playerShots ) {
             shot->Draw();
@@ -438,12 +445,21 @@ void display (void) {
         player->Draw();
     }
 
-    //  glPushMatrix();
-    //     glScalef(70,70,1);
-    //     glTranslatef(0,0,-10);
-    //     glRotatef(90,1,0,0);
-    //     DisplayPlane(texturePlane);
-    // glPopMatrix();
+    StartTexturing();
+        glPushMatrix();
+            glScalef(1000,1000,1);
+            glTranslatef(0,0,-100);
+            glRotatef(90,1,0,0);
+            DisplayPlane(texturePlane);
+        glPopMatrix();
+        glPushMatrix();
+            glScalef(1000,1000,1);
+            glTranslatef(0,0,100);
+            glRotatef(90,1,0,0);
+            DisplayPlane(texturePlane);
+        glPopMatrix();
+
+    EndTexturing();
 
 
     glutSwapBuffers();
@@ -458,6 +474,14 @@ void init (void) {
     glDepthFunc(GL_LEQUAL);   
 
     texturePlane = LoadTextureRAW( "stars1.bmp" );
+    textureWood = LoadTextureRAW( "wood.bmp" );
+    textureBlocks = LoadTextureRAW("block2.bmp");
+    textureHero = LoadTextureRAW("green_pixel.bmp");
+    textureEnemies = LoadTextureRAW("red_pixel.bmp");
+
+    player->SetTexture(textureHero);
+
+    map->SetTextures(textureWood, textureBlocks, textureEnemies);
 
     // Set light intensity and color for each component
     glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);

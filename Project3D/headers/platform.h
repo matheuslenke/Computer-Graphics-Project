@@ -20,7 +20,7 @@ class Platform {
     GLfloat sizeZ;
     int gColor;
 private:
-    void DrawPlatform(GLfloat x, GLfloat y, GLfloat z);
+    void DrawPlatform(GLfloat x, GLfloat y, GLfloat z, GLuint texture);
     void DrawRectangle(GLfloat height, GLfloat width, GLfloat depth, GLfloat R, GLfloat G, GLfloat B);
 public:
     Platform(GLfloat x, GLfloat y, GLfloat sizeX, GLfloat sizeY, GLfloat sizeZ){
@@ -31,8 +31,8 @@ public:
         this->sizeY = sizeY;
         this->sizeZ = sizeZ;
     };
-    void Draw(){ 
-        DrawPlatform(gX, gY, gZ);
+    void Draw(GLuint texture){ 
+        DrawPlatform(gX, gY, gZ, texture);
     };
     bool isColiding(GLfloat x, GLfloat y, GLfloat z);
     vec2 *ReturnPlatformXLimits() {

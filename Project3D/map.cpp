@@ -7,37 +7,49 @@ using namespace std;
 
 void Map::DrawMap(GLfloat x, GLfloat y, GLfloat z)
 {
-    glPushMatrix();
-    glTranslatef(x, y, 0);
-
-    glPushMatrix();
-    DrawOutline(); // Desenha contorno dos limites do mapa
-    glPopMatrix();
-
-    glPopMatrix();
+    // DrawOutline();
+    
     for (Platform platform : this->platforms) {
-        platform.Draw();    
+        platform.Draw(platformsTexture);    
     }
-
     DrawEnemies();
 }
 
 void Map::DrawOutline() {
-    glColor3f (0.1, 0.1, 0.6);
-    int slices = 16;
+    glPushMatrix();
+
+    glTranslatef(gX, gY, 0);
+
+    glColor3f (0.6, 0.6, 0.6);
+    int slicesX = 16;
+    int slicesY = 32;
+
+    glBindTexture(GL_TEXTURE_2D, floorTexture);
+
+    float texSize = 32;
+
+    float textureX = sizeX/texSize;
+    float textureY = sizeY/texSize;
 
     glNormal3f(0,1,0);
-    for (int i = 0; i < slices; i++){
-        for (int j = 0; j < slices; j++){
+
+    for (int i = 0; i < slicesX; i++){
+        for (int j = 0; j < slicesY; j++){
             glBegin(GL_QUADS);
-                glVertex3f ((this->sizeX/slices)*i, 0, (this->sizeZ/slices)*j);
-                glVertex3f ((this->sizeX/slices)*(i+1), 0, (this->sizeZ/slices)*j);
-                glVertex3f ((this->sizeX/slices)*(i+1) , 0, (this->sizeZ/slices)*(j+1));
-                glVertex3f ((this->sizeX/slices)*i, 0, (this->sizeZ/slices)*(j+1));
-                glVertex3f ((this->sizeX/slices)*i, 0, (this->sizeZ/slices)*j);
+                glTexCoord2f ((textureX/slicesX)*i,(textureY/slicesY)*j);
+                glVertex3f ((this->sizeX/slicesX)*i, 0, (this->sizeZ/slicesY)*j);        
+                glTexCoord2f ((textureX/slicesX)*(i+1),(textureY/slicesY)*j);
+                glVertex3f ((this->sizeX/slicesX)*(i+1), 0, (this->sizeZ/slicesY)*j);
+                glTexCoord2f ((textureX/slicesX)*(i+1), (textureY/slicesY)*(j+1));
+                glVertex3f ((this->sizeX/slicesX)*(i+1) , 0, (this->sizeZ/slicesY)*(j+1));
+                glTexCoord2f ((textureX/slicesX)*i, (textureY/slicesY)*(j+1));
+                glVertex3f ((this->sizeX/slicesX)*i, 0, (this->sizeZ/slicesY)*(j+1));
             glEnd();
         }
     }
+
+    glPopMatrix();
+
 }
 
 void Map::DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G, GLfloat B)
@@ -228,5 +240,14 @@ Map::~Map() {
     }
     for (Shot* shot: enemyShots) {
         delete shot;
+    }
+}
+
+
+void Map::SetTextures(GLuint floorTexture, GLuint platformsTexture, GLuint enemiesTexture){
+    this->floorTexture = floorTexture;
+    this->platformsTexture = platformsTexture;
+    for (Enemy* enemy : this->enemies) {
+        enemy->SetTexture(enemiesTexture);
     }
 }

@@ -12,6 +12,8 @@
 #define WIDTH_FROM_CENTER 0
 
 void drawRectangle(GLdouble height, GLdouble width, GLdouble depth, GLfloat R, GLfloat G, GLfloat B, int widthDrawStart = WIDTH_FROM_BOTTOM);
+void drawRectangleTextured(GLdouble height, GLdouble width, GLdouble depth, GLfloat R, GLfloat G, GLfloat B, GLuint texture,  float texSizeFactor=1, int slices=1 );
+
 
 
 #endif	/* GEOM_DRAW_H */

@@ -50,8 +50,9 @@ void Character::DrawCharacter(GLdouble x, GLdouble y, GLdouble z)
     glTranslatef(0, -totalHeight * 0.1, 0);
     // Desenha o corpo do personagem
     glPushMatrix();
-    glTranslatef(-bodyWidth/2, bodyHeight, 0);
-    drawRectangle(bodyHeight, bodyWidth, bodyWidth, bodyColor.x, bodyColor.y, bodyColor.z);
+    glTranslatef(-bodyWidth/2, bodyHeight, -bodyWidth/2);
+    // drawRectangle(bodyHeight, bodyWidth, bodyWidth, bodyColor.x, bodyColor.y, bodyColor.z);
+    drawRectangleTextured(bodyHeight, bodyWidth, bodyWidth, bodyColor.x, bodyColor.y, bodyColor.z, texture, 10);
     glPopMatrix();
     // Desenha a cabeça do personagem
     glPushMatrix();

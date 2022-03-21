@@ -30,11 +30,13 @@ class Map {
     vector <Shot*> enemyShots;
     int gColor;
 
+    GLuint floorTexture = 0;
+    GLuint platformsTexture = 0;
+
     void DrawMap(GLfloat x, GLfloat y, GLfloat z);
     void DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G, GLfloat B);
     void DrawPlatforms();
     void DrawEnemies();
-    void DrawOutline();
 public:
     Map(GLfloat x, GLfloat y, GLfloat sizeX, GLfloat sizeY){
         gX = x; 
@@ -48,6 +50,8 @@ public:
     void Draw(){ 
         DrawMap(gX, gY, gZ);
     };
+    void DrawOutline();
+    void SetTextures(GLuint floorTexture, GLuint platformsTexture, GLuint enemiesTexture);
     void CreateMapFromSVG();
     bool ColidesWithAPlatform(GLfloat x, GLfloat y, GLfloat z);
     vec2* GetPlatformLimitsAtPoint(GLfloat x, GLfloat y);

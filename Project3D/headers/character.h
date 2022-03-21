@@ -60,6 +60,8 @@ protected:
     GLdouble lookingAngle;
     vec3 directionVector;
 
+    GLuint texture = 0;
+
     void DrawCharacter(GLdouble x, GLdouble y, GLdouble gZ);
     void DrawRectangle(GLdouble height, GLdouble width, GLdouble depth, GLfloat R, GLfloat G, GLfloat B);
     void DrawCircle(GLdouble radius, GLfloat R, GLfloat G, GLfloat B);
@@ -113,6 +115,10 @@ public:
         this->directionVector.z = sin(this->lookingAngle * M_PI/180);
 
     };
+    void SetTexture(GLuint texture){
+        this->texture = texture;
+    };
+
     void Draw(){ 
         DrawCharacter(gX, gY, gZ);
     };
