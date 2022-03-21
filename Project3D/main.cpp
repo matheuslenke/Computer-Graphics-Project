@@ -239,7 +239,6 @@ void crossProduct(
     oZ /= norm;
 }
 
-
 //Funcao auxiliar para normalizar um vetor a/|a|
 void normalize(float a[3])
 {
@@ -290,17 +289,62 @@ void aimingCamera() {
     aimFinalPosition.x, aimFinalPosition.y, aimFinalPosition.z, 0, 1, 0);
 }
 
-void drawLights() {
-        GLfloat light_position[] = { (GLfloat) (player->GetgX() - player->GetTotalHeight()), (GLfloat) (player->GetgY() + (GLfloat)1.5 * player->GetTotalHeight()), map->GetSizeZ(), 1.0 };
 
-        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+//Funcao auxiliar para normalizar um vetor a/|a|
+void normalizeVec(vec3 &a)
+{
+    double norm = sqrt(a.x*a.x+a.y*a.y+a.z*a.z); 
+    a.x /= norm;
+    a.y /= norm;
+    a.z /= norm;
+}
+
+static const GLfloat light_diffuse[] = {1,1,1,1.5};
+static const GLfloat light_ambient[] = {0.2,0.2,0.,1};
+static const GLfloat light_defaut_attenuation[] = {1,1,1};
+static const GLfloat light_specular[] = {1,1,1,1};
+
+
+void drawLights() {
+        GLfloat light_position[4] = { (GLfloat) (player->GetgX() - player->GetTotalHeight()), (GLfloat) (player->GetgY() + (GLfloat)1.5 * player->GetTotalHeight()), map->GetSizeZ(), 1.0 };
+        if(!dark){
+            glDisable(GL_LIGHT1);
+            glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+            glEnable(GL_LIGHT0);
+        } else {
+            glDisable(GL_LIGHT0);
+            // Set light intensity and color for each component
+            glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
+            glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
+            glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
+
+            glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, (GLfloat) 60.0);
+            glLightf(GL_LIGHT1,GL_SPOT_EXPONENT, 60);
+            vec3 flashlightPos = player->GetFinalShootPosition();
+            vec3 flashlightDir = flashlightPos - player->GetInitialShootPosition();
+            normalizeVec(flashlightDir);
+            light_position[0] = (GLfloat) flashlightPos.x;
+            light_position[1] = (GLfloat) flashlightPos.y;
+            light_position[2] = (GLfloat) flashlightPos.z;
+            
+            GLfloat light_diretion[] = { (GLfloat) flashlightDir.x, (GLfloat) flashlightDir.y, (GLfloat) flashlightDir.z};
+
+            glLightfv(GL_LIGHT1, GL_POSITION, light_position);
+            glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light_diretion);
+
+            glEnable(GL_LIGHT1);
+
+        }
+
+        cout << light_position[0] << ", " << light_position[1] << ", " <<  light_position[2] << endl;
+
         glDisable (GL_LIGHTING);
-        glColor3f (0.0, 1.0, 1.0);
-        glPushMatrix();
-        glTranslatef(light_position[0], light_position[1], light_position[2]);
-        glutWireCube (0.1);
+            glPushMatrix();
+                glColor3f (0.0, 1.0, 1.0);
+                glTranslatef(light_position[0], light_position[1], light_position[2]);
+                glutWireCube (1);
+            glPopMatrix();
         glEnable (GL_LIGHTING);
-        glPopMatrix();
 }
 
 void DisplayPlane (GLuint texture)
@@ -388,9 +432,7 @@ void display (void) {
             glTranslatef(-player->GetgX(), -player->GetgY(), -player->GetgZ());
         }
         
-        if(!dark) {
-            drawLights();
-        }
+        drawLights();
 
         map->Draw();
 
@@ -402,12 +444,12 @@ void display (void) {
         player->Draw();
     }
 
-     glPushMatrix();
-        glScalef(70,70,1);
-        glTranslatef(0,0,-10);
-        glRotatef(90,1,0,0);
-        DisplayPlane(texturePlane);
-    glPopMatrix();
+    //  glPushMatrix();
+    //     glScalef(70,70,1);
+    //     glTranslatef(0,0,-10);
+    //     glRotatef(90,1,0,0);
+    //     DisplayPlane(texturePlane);
+    // glPopMatrix();
 
 
     glutSwapBuffers();
@@ -417,15 +459,20 @@ void init (void) {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_LIGHTING);
-    glShadeModel (GL_SMOOTH);
+    glShadeModel(GL_SMOOTH);
 
     glDepthFunc(GL_LEQUAL);   
 
     texturePlane = LoadTextureRAW( "stars1.bmp" );
 
+
+
     glBindTexture( GL_TEXTURE_2D, 0);
     // glEnable( GL_NORMALIZE );
     glEnable(GL_LIGHT0);
+    // glEnable(GL_NORMALIZE);
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 }
 
 

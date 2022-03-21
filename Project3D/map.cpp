@@ -23,20 +23,21 @@ void Map::DrawMap(GLfloat x, GLfloat y, GLfloat z)
 }
 
 void Map::DrawOutline() {
-    glColor3f (0.1, 0.1, 0.7);
+    glColor3f (0.1, 0.1, 0.6);
+    int slices = 16;
 
-    glBegin(GL_QUADS);
-        glNormal3f(0,1,0);
-        glVertex3f (0, 0, 0);
-        glNormal3f(0,1,0);
-        glVertex3f (this->sizeX, 0, 0);
-        glNormal3f(0,1,0);
-        glVertex3f (this->sizeX , 0, this->sizeZ);
-        glNormal3f(0,1,0);
-        glVertex3f (0, 0, this->sizeZ);
-        glNormal3f(0,1,0);
-        glVertex3f (0, 0, 0);
-    glEnd();
+    glNormal3f(0,1,0);
+    for (int i = 0; i < slices; i++){
+        for (int j = 0; j < slices; j++){
+            glBegin(GL_QUADS);
+                glVertex3f ((this->sizeX/slices)*i, 0, (this->sizeZ/slices)*j);
+                glVertex3f ((this->sizeX/slices)*(i+1), 0, (this->sizeZ/slices)*j);
+                glVertex3f ((this->sizeX/slices)*(i+1) , 0, (this->sizeZ/slices)*(j+1));
+                glVertex3f ((this->sizeX/slices)*i, 0, (this->sizeZ/slices)*(j+1));
+                glVertex3f ((this->sizeX/slices)*i, 0, (this->sizeZ/slices)*j);
+            glEnd();
+        }
+    }
 }
 
 void Map::DrawRectangle(GLfloat height, GLfloat width, GLfloat R, GLfloat G, GLfloat B)
