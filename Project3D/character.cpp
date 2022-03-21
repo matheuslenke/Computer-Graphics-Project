@@ -54,6 +54,9 @@ void Character::DrawCharacter(GLdouble x, GLdouble y, GLdouble z)
     // drawRectangle(bodyHeight, bodyWidth, bodyWidth, bodyColor.x, bodyColor.y, bodyColor.z);
     drawRectangleTextured(bodyHeight, bodyWidth, bodyWidth, bodyColor.x, bodyColor.y, bodyColor.z, texture, 10);
     glPopMatrix();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     // Desenha a cabeça do personagem
     glPushMatrix();
     glTranslatef(0, bodyHeight + radiusHead, 0);
@@ -88,9 +91,8 @@ void Character::DrawLegs() {
     glTranslatef(-legWidth/2, 0, -bodyWidth/2 + legWidth/2);
     glRotatef(this->leg1Theta1, 0, 0, 1);
     drawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
-
-    glRotatef(this->leg1Theta2, 0, 0, 1);
     glTranslatef(0, -legHeight, 0);
+    glRotatef(this->leg1Theta2-this->leg1Theta1, 0, 0, 1);
     drawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
     glPopMatrix();
     
@@ -99,9 +101,8 @@ void Character::DrawLegs() {
     glTranslatef(-legWidth/2, 0, bodyWidth/2 - legWidth/2);
     glRotatef(this->leg2Theta1, 0, 0, 1);
     drawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
-
-    glRotatef(this->leg2Theta2, 0, 0, 1);
     glTranslatef(0, -legHeight, 0);
+    glRotatef(this->leg2Theta2-this->leg2Theta1, 0, 0, 1);
     drawRectangle(legHeight, legWidth, legWidth, bodyColor.x + 0.2, bodyColor.y - 0.2, bodyColor.z + 0.2);
     glPopMatrix();
 }
@@ -313,6 +314,9 @@ void Character::AnimateLegs() {
     if(this->leg2Theta1 < -30) { this->da2 = legMovingSpeed; }
     this->leg1Theta1 += this->da;
     this->leg2Theta1 += this->da2;
+
+    this->leg1Theta2 = leg1Theta1 <= 0 ? leg1Theta1*2.2-30/10 : leg1Theta1;
+    this->leg2Theta2 = leg2Theta1 <= 0 ? leg2Theta1*2.2-30/10 : leg2Theta1;
 }
 
 void Character::MoveInY(GLdouble timeDiff, bool isPressingJumpButton, Map* map) {

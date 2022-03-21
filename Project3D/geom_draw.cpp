@@ -28,8 +28,6 @@ void drawRectangle(GLdouble height, GLdouble width, GLdouble depth, GLfloat R, G
         glVertex3f (widthEnd, 0, depth/2);
         glNormal3f(0,1,0);
         glVertex3f (widthStart, 0, depth/2);
-        glNormal3f(0,1,0);
-        glVertex3f (widthStart, 0, -depth/2);
     glEnd();
 
     // Face inferior
@@ -42,11 +40,20 @@ void drawRectangle(GLdouble height, GLdouble width, GLdouble depth, GLfloat R, G
         glVertex3f (widthEnd , -height, depth/2);
         glNormal3f(0,-1,0);
         glVertex3f (widthStart, -height, depth/2);
-        glNormal3f(0,-1,0);
-        glVertex3f (widthStart, -height, -depth/2);
     glEnd();
 
     // Faces laterais
+
+    glBegin(GL_QUADS); // 3
+        glNormal3f(1,0,0);
+        glVertex3f (widthEnd, 0, -depth/2);
+        glNormal3f(1,0,0);
+        glVertex3f (widthEnd, -height, -depth/2);
+        glNormal3f(1,0,0);
+        glVertex3f (widthEnd, -height, depth/2);
+        glNormal3f(1,0,0);
+        glVertex3f (widthEnd, 0, depth/2);
+    glEnd();
     glBegin(GL_QUADS); // 1
         glNormal3f(-1,0,0);
         glVertex3f (0, 0, -depth/2);
@@ -56,8 +63,6 @@ void drawRectangle(GLdouble height, GLdouble width, GLdouble depth, GLfloat R, G
         glVertex3f (0, -height, depth/2);
         glNormal3f(-1,0,0);
         glVertex3f (0, 0, depth/2);
-        glNormal3f(-1,0,0);
-        glVertex3f (0, 0, -depth/2);
     glEnd();
     glBegin(GL_QUADS); // 2
         glNormal3f(0,0,1);
@@ -68,20 +73,6 @@ void drawRectangle(GLdouble height, GLdouble width, GLdouble depth, GLfloat R, G
         glVertex3f (widthEnd, -height, depth/2);
         glNormal3f(0,0,1);
         glVertex3f (widthEnd, 0, depth/2);
-        glNormal3f(0,0,1);
-        glVertex3f (widthStart, 0, depth/2);
-    glEnd();
-    glBegin(GL_QUADS); // 3
-        glNormal3f(1,0,0);
-        glVertex3f (widthEnd, 0, -depth/2);
-        glNormal3f(1,0,0);
-        glVertex3f (widthEnd, -height, -depth/2);
-        glNormal3f(1,0,0);
-        glVertex3f (widthEnd, -height, depth/2);
-        glNormal3f(1,0,0);
-        glVertex3f (widthEnd, 0, depth/2);
-        glNormal3f(1,0,0);
-        glVertex3f (widthEnd, 0, -depth/2);
     glEnd();
     glBegin(GL_QUADS); // 4
         glNormal3f(0,0, -1);
@@ -92,8 +83,6 @@ void drawRectangle(GLdouble height, GLdouble width, GLdouble depth, GLfloat R, G
         glVertex3f (widthEnd, -height, -depth/2);
         glNormal3f(0,0, -1);
         glVertex3f (widthStart, -height, -depth/2);
-        glNormal3f(0,0, -1);
-        glVertex3f (widthStart, 0, -depth/2);
     glEnd();
 }
 
